@@ -1,0 +1,19 @@
+{
+    "name": "viartfelix/freather",
+    "type": "librairy",
+    "autoload": {
+        "psr-4": {
+            "Viartfelix\\Freather\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "ViartFelix",
+            "email": "viart.felix2017@gmail.com"
+        }
+    ],
+    "require": {
+        "spatie/geocoder": "^3.15",
+        "guzzlehttp/guzzle": "^7.0"
+    }
+}
