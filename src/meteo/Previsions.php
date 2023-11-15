@@ -12,15 +12,19 @@ class Previsions {
   public float $latitude;
   public mixed $rawResponse;
   public mixed $response;
+
+  public int $timestamps;
   
   function __construct(
     Config $config,
     float $lat,
     float $lon,
+    int $timestamps=null,
   ) {
     $this->config=$config;
     $this->latitude=$lat;
     $this->longitude=$lon;
+    $this->timestamps=isset($timestamps) ? $timestamps : null;
   }
 
   public function exec() {
@@ -36,12 +40,13 @@ class Previsions {
           "lat"=>$this->latitude,
           "lon"=>$this->longitude,
           "appid"=>$this->config->apiKey,
+          "cnt"=>isset($this->timestamps) ? $this->timestamps : 0,
         ],
       ]
     );
 
     $this->rawResponse=$res->getContent();
-    $this->response=json_decode($this->rawResponse);
+    $this->response=json_decode($this->rawResponse)->list;
   }
 
   public function getRaw() {
@@ -51,8 +56,6 @@ class Previsions {
   public function get() {
     return $this->response;
   }
-
-
 }
 
 ?>
