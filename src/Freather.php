@@ -4,9 +4,9 @@ namespace Viartfelix\Freather;
 
 use Viartfelix\Freather\Config\Config;
 use Viartfelix\Freather\meteo\Actu;
+use Viartfelix\Freather\meteo\Previsions;
 
 use Viartfelix\Freather\Carte\Carte;
-use Viartfelix\Freather\Previsions\Previsions;
 
 class Freather {
   private Config $config;
@@ -44,7 +44,16 @@ class Freather {
   }
 
   /** Fonction qui permet de récupérer les préivisions météo */
-  function getPrevi() {
+  function getPrevi(string|float $lat, string|float $lon, bool $raw) {
+    $previ=new Previsions(
+      $this->config,
+      floatval($lat),
+      floatval($lon),
+    );
+
+    $previ->exec();
+
+    return $raw===true ? $previ->getRaw() : $previ->get();
     //TODO: Appel vers méthode dans Previsions.php
   }
 }

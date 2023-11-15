@@ -9,11 +9,20 @@ use Viartfelix\Freather\Freather;
 
 $a=new Freather("da12be2d8d525a3ef78aff509a1b0cad");
 
-var_dump($a->getActu(
-  50.639129,
-  3.074458,
-  false,
-));
+// $a->getActu(
+//   50.639129,
+//   3.074458,
+//   false,
+// );
+
+var_dump(
+  $a->getPrevi(
+    50.639129,
+    3.074458,
+    false,
+  ),
+)
+
 
 
 
