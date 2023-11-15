@@ -3,6 +3,7 @@
 namespace Viartfelix\Freather;
 
 use Viartfelix\Freather\Config\Config;
+use Viartfelix\Freather\Exceptions\FreatherException;
 use Viartfelix\Freather\meteo\Actu;
 use Viartfelix\Freather\meteo\Previsions;
 
@@ -15,13 +16,55 @@ class Freather {
   private mixed $previResponse;
   private mixed $carteResponse;
 
-  function __construct(string $key=null) {
+  public Config $previousConfig;
+
+  function __construct(
+    string $key=null,
+    string $apiEntrypoint=null,
+    string $lang="en",
+    bool $metric=true,
+    int $timestamps=-1,
+  ) {
     $this->config=new Config(
       isset($key) ? $key : null,
+      isset($apiEntrypoint) ? $apiEntrypoint : null,
+      $lang,
+      $metric,
+      $timestamps,
     );
   }
 
-  
+  public function defineConfig(
+    string $key=null,
+    string $lang="en",
+    bool $metric=true,
+    string $entrypoint=null,
+    int $timestamps=-1,
+  ) {
+    $this->previousConfig=$this->config;
+
+    $this->config=new Config(
+      isset($key) ? $key : $this->previousConfig->apiKey,
+      isset($entrypoint) ? $entrypoint : $this->previousConfig->apiEntrypoint,
+      isset($lang) ? $lang : $this->previousConfig->lang,
+      isset($metric) ? $metric : false,
+      isset($timestamps) ? $timestamps : $this->previousConfig->timestamps,
+    );
+
+    return $this;
+  }
+
+  public function rollbackConfig() {
+    if(isset($this->previousConfig)) {
+      $this->config=$this->previousConfig;
+    } else {
+      throw new FreatherException("No previous config to rollback to.");
+    }
+    
+    return $this;
+  }
+
+   /* ---------------------------------------- Fetchers ---------------------------------------- */  
 
   /** Fonction qui permet de récupérer la météo actuelle */
   function fetchActu(string|float $lat, string|float $lon, bool $raw) {
@@ -33,7 +76,9 @@ class Freather {
 
     $actu->exec();
 
-    return $raw===true ? $actu->getRaw() : $actu->get();
+    $this->actuResponse = $raw===true ? $actu->getRaw() : $actu->get();
+
+    return $this;
   }
 
   /** Fonction qui permet de récupérer le lien vers la carte */
@@ -54,10 +99,19 @@ class Freather {
 
     $this->previResponse = $raw===true ? $previ->getRaw() : $previ->get();
     //TODO: Appel vers méthode dans Previsions.php
+    return $this;
   }
 
-  function setKey(string $key): void {
+
+
+
+
+  /* ---------------------------------------- Getters and setters ---------------------------------------- */
+
+  function setKey(string $key) {
     $this->config->apiKey=$key;
+
+    return $this;
   }
 
   function getKey(): string {
