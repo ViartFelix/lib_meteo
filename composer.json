@@ -14,6 +14,8 @@
     ],
     "require": {
         "spatie/geocoder": "^3.15",
-        "guzzlehttp/guzzle": "^7.0"
+        "guzzlehttp/guzzle": "^7.0",
+        "spatie/ignition": "^1.11",
+        "symfony/http-client": "^6.3"
     }
 }

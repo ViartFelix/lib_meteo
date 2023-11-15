@@ -1,29 +1,41 @@
 <?php
 
 namespace Viartfelix\Freather;
-use Viartfelix\Freather\Actu\Actu;
+
+use Viartfelix\Freather\Config\Config;
+use Viartfelix\Freather\meteo\Actu;
+
 use Viartfelix\Freather\Carte\Carte;
 use Viartfelix\Freather\Previsions\Previsions;
 
 class Freather {
+  private Config $config;
 
-  public string $apiKey;
-
-  function __construct(string $apiKey=null) {
-    if(isset($apiKey)) $this->apiKey=$apiKey;
+  function __construct(string $key=null) {
+    $this->config=new Config(
+      isset($key) ? $key : null,
+    );
   }
 
   function setKey(string $key): void {
-    $this->apiKey=$key;
+    $this->config->apiKey=$key;
   }
 
   function getKey(): string {
-    return $this->apiKey;
+    return $this->config->apiKey;
   }
 
   /** Fonction qui permet de récupérer la météo actuelle */
-  function getActu() {
-    //TODO: Appel vers méthode dans Actu.php
+  function getActu(string|float $lat, string|float $lon, bool $raw) {
+    $actu=new Actu(
+      $this->config,
+      floatval($lat),
+      floatval($lon),
+    );
+
+    $actu->exec();
+
+    return $raw===true ? $actu->getRaw() : $actu->get();
   }
 
   /** Fonction qui permet de récupérer le lien vers la carte */
