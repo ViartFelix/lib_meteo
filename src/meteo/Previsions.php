@@ -36,7 +36,7 @@ class Previsions {
         "verify_peer"=>false,
         "query"=>[
           "lang"=>$this->config->lang,
-          "units"=>$this->config->unit,
+          "measurement"=>$this->config->unit,
           "lat"=>$this->latitude,
           "lon"=>$this->longitude,
           "appid"=>$this->config->apiKey,

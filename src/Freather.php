@@ -19,47 +19,51 @@ class Freather {
   public Config $previousConfig;
 
   function __construct(
-    string $key=null,
-    string $apiEntrypoint=null,
-    string $lang="en",
-    bool $metric=true,
-    int $timestamps=-1,
+    array $init=array(
+      "apiKey"=>null,
+      "apiEntrypoint"=>null,
+      "lang"=>"en",
+      "measurement"=>true,
+      "timestamps"=>1,
+    ),
   ) {
-    $this->config=new Config(
-      isset($key) ? $key : null,
-      isset($apiEntrypoint) ? $apiEntrypoint : null,
-      $lang,
-      $metric,
-      $timestamps,
-    );
+    //var_dump($init);
+    echo "<br/><br/><br/>";
+
+    $this->config=new Config([
+      "apiKey"=>$init["apiKey"] ?? null,
+      "apiEntrypoint"=>$init["apiEntrypoint"] ?? null,
+      "lang"=>$init["lang"] ?? null,
+      "measurement"=>$init["measurement"] ?? null,
+      "timestamps"=>$init["timestamps"] ?? null,
+    ]);
   }
 
   public function defineConfig(
-    string $key=null,
-    string $lang="en",
-    bool $metric=true,
-    string $entrypoint=null,
-    int $timestamps=-1,
+    array $config=array(
+      "apiKey"=>null,
+      "apiEntrypoint"=>null,
+      "lang"=>"en",
+      "measurement"=>true,
+      "timestamps"=>0,
+    )
   ) {
     $this->previousConfig=$this->config;
 
-    $this->config=new Config(
-      isset($key) ? $key : $this->previousConfig->apiKey,
-      isset($entrypoint) ? $entrypoint : $this->previousConfig->apiEntrypoint,
-      isset($lang) ? $lang : $this->previousConfig->lang,
-      isset($metric) ? $metric : false,
-      isset($timestamps) ? $timestamps : $this->previousConfig->timestamps,
-    );
+    $this->config=new Config([
+      "apiKey" => $config["apiKey"] ?? $this->previousConfig->apiKey,
+      "apiEntrypoint" => $config["entrypoint"] ?? $this->previousConfig->apiEntrypoint,
+      "lang" => $config["lang"] ?? $this->previousConfig->lang,
+      "measurement" => $config["measurement"] ?? $this->previousConfig->lang,
+      "timestamps" => $config["timestamps"] ?? $this->previousConfig->timestamps,
+    ]);
 
     return $this;
   }
 
   public function rollbackConfig() {
-    if(isset($this->previousConfig)) {
-      $this->config=$this->previousConfig;
-    } else {
-      throw new FreatherException("No previous config to rollback to.");
-    }
+    if(isset($this->previousConfig)) $this->config=$this->previousConfig;
+    else throw new FreatherException("No previous config to rollback to.");
     
     return $this;
   }
@@ -98,7 +102,7 @@ class Freather {
     $previ->exec();
 
     $this->previResponse = $raw===true ? $previ->getRaw() : $previ->get();
-    //TODO: Appel vers méthode dans Previsions.php
+    
     return $this;
   }
 

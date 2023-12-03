@@ -14,11 +14,8 @@ class Actu {
   public mixed $response;
 
 
-  function __construct(
-    Config $config,
-    float $latitude,
-    float $longitude,
-  ) {
+  function __construct(Config $config,float $latitude,float $longitude)
+  {
     $this->config=$config;
     $this->latitude=$latitude;
     $this->longitude=$longitude;
@@ -26,6 +23,7 @@ class Actu {
 
   public function exec() {
     $client=HttpClient::create();
+
     $res=$client->request(
       "GET",
       $this->config->apiEntrypoint . "weather",
@@ -33,7 +31,7 @@ class Actu {
         "verify_peer"=>false,
         "query"=>[
           "lang"=>$this->config->lang,
-          "units"=>$this->config->unit,
+          "measurement"=>$this->config->unit,
           "lat"=>$this->latitude,
           "lon"=>$this->longitude,
           "appid"=>$this->config->apiKey,

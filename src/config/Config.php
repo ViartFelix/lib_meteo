@@ -9,25 +9,18 @@ class Config {
   public string $unit;
   public string $timestamps;
 
-  public function __construct(
-    $key=null,
-    $api=null,
-    $lang="en",
-    $metric=true,
-    $timestamps=null,
-  ) {
-    if(isset($key)) $this->apiKey=$key;
-    if(isset($api)) $this->apiEntrypoint=$api;
-    
-    if(isset($timestamps) && is_numeric($timestamps)) $this->timestamps=$timestamps;
-    else $this->timestamps=-1;
-    
-    $this->lang=$lang;
-
-    if(!isset($metric)) $this->unit="metric";
-    else $this->unit = $metric===true ? "metric" : "imperial";
-
-    
+  public function __construct($config=[
+    "apiKey"=>null,
+    "apiEntrypoint"=>null,
+    "lang"=>"en",
+    "measurement"=>"standard",
+    "timestamps"=>null,
+  ]) {
+    $this->apiKey = $config["apiKey"] ?? "";
+    $this->apiEntrypoint = $config["apiEntrypoint"] ?? $this->apiEntrypoint ?? "";
+    $this->lang = $config["lang"] ?? "en";
+    $this->timestamps = $config["timestamps"] ?? 1;
+    $this->unit = $config["measurement"] ?? "standard";
   }
 }
 
