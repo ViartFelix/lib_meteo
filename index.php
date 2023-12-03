@@ -10,7 +10,7 @@ use Viartfelix\Freather\Freather;
 $a=new Freather([
   "apiKey"=>"da12be2d8d525a3ef78aff509a1b0cad",
   "lang"=>"fr",
-  "measurement"=>true,
+  "measurement"=>"metric",
   "timestamps"=>"56"
 ]);
 
@@ -48,7 +48,6 @@ $l=$a->rollbackConfig()->fetchActu(
 var_dump($l);
 echo "<br/><br/><br/>";
 
-*/
 
 
 $hey=$a->fetchPrevi(
@@ -63,14 +62,15 @@ foreach ($hey as $key => $value) {
   echo $key. " | ";
   var_dump($value);
 }
-
-
-
+*/
 
 // try {
 //   throw new FreatherException("hello");
 // } catch(FreatherException $e) {
 //   var_dump($e);
 // }
+
+$test = $a->fetchMap(3,5,3)->getMap();
+var_dump($test);
 
 ?>

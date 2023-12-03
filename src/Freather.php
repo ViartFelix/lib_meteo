@@ -4,10 +4,12 @@ namespace Viartfelix\Freather;
 
 use Viartfelix\Freather\Config\Config;
 use Viartfelix\Freather\Exceptions\FreatherException;
-use Viartfelix\Freather\meteo\Actu;
-use Viartfelix\Freather\meteo\Previsions;
 
-use Viartfelix\Freather\Carte\Carte;
+use Viartfelix\Freather\meteo\{
+  Actu,
+  Previsions,
+  Carte,
+};
 
 class Freather {
   private Config $config;
@@ -27,9 +29,6 @@ class Freather {
       "timestamps"=>1,
     ),
   ) {
-    //var_dump($init);
-    echo "<br/><br/><br/>";
-
     $this->config=new Config([
       "apiKey"=>$init["apiKey"] ?? null,
       "apiEntrypoint"=>$init["apiEntrypoint"] ?? null,
@@ -86,8 +85,18 @@ class Freather {
   }
 
   /** Fonction qui permet de récupérer le lien vers la carte */
-  function fetchMap() {
-    //TODO: Appel vers méthode dans Carte.php
+  function fetchMap(int $zoom, int $x, int $y) {
+
+    $map = new Carte(
+      $this->config,
+      $zoom,
+      $x,
+      $y,
+    );
+
+    $this->carteResponse=$map->getLink();
+
+    return $this;
   }
 
   /** Fonction qui permet de récupérer les préivisions météo */
@@ -105,10 +114,6 @@ class Freather {
     
     return $this;
   }
-
-
-
-
 
   /* ---------------------------------------- Getters and setters ---------------------------------------- */
 
