@@ -8,53 +8,84 @@ use Symfony\Component\HttpClient\HttpClient;
 
 class Previsions {
   private Config $config;
-  public float $longitude;
-  public float $latitude;
-  public mixed $rawResponse;
-  public mixed $response;
+  private float $longitude;
+  private float $latitude;
+  private mixed $rawResponse;
+  private mixed $response;
 
-  public int $timestamps;
+  private $client;
   
-  function __construct(
-    Config $config,
-    float $lat,
-    float $lon,
-    int $timestamps=null,
-  ) {
-    $this->config=$config;
-    $this->latitude=$lat;
-    $this->longitude=$lon;
-    $this->timestamps=isset($timestamps) ? $timestamps : null;
+  function __construct(Config &$config)
+  {
+    $this->config=&$config;
   }
 
-  public function exec() {
-    $client=HttpClient::create();
-    $res=$client->request(
+  public function fetchPrevisions(float $lon, float $lat): void
+  {
+    $this->setLong($lon);
+    $this->setLat($lat);
+
+    $this->prepare();
+    $this->exec();
+  }
+
+  public function prepare(): void
+  {
+    $this->client = HttpClient::create();
+  }
+
+  public function exec(): void
+  {
+    $this->rawResponse=$this->client->request(
       "GET",
-      $this->config->apiEntrypoint . "forecast",
+      $this->config->getApiEntrypoint() . "forecast",
       [
         "verify_peer"=>false,
         "query"=>[
-          "lang"=>$this->config->lang,
-          "measurement"=>$this->config->unit,
+          "lang"=>$this->config->getLang(),
+          "measurement"=>$this->config->getUnit(),
           "lat"=>$this->latitude,
           "lon"=>$this->longitude,
-          "appid"=>$this->config->apiKey,
-          "cnt"=>isset($this->timestamps) ? $this->timestamps : 0,
+          "appid"=>$this->config->getApiKey(),
+          "cnt"=>$this->config->getTimestamps(),
         ],
       ]
     );
-
-    $this->rawResponse=$res->getContent();
-    $this->response=json_decode($this->rawResponse)->list;
   }
 
-  public function getRaw() {
+  public function returnResults(bool $raw): mixed
+  {
+    return ($raw ? $this->getRaw() : $this->get());
+  }
+
+  public function getRaw(): mixed
+  {
     return $this->rawResponse;
   }
 
-  public function get() {
-    return $this->response;
+  public function get(): mixed
+  {
+    return json_decode($this->getRaw());
+  }
+
+  public function setLong(float $long): void
+  {
+    $this->longitude = $long;
+  }
+
+  public function getLong(): float
+  {
+    return $this->longitude;
+  }
+
+  public function setLat(float $lat): void
+  {
+    $this->latitude = $lat;
+  }
+
+  public function getLat(): float
+  {
+    return $this->latitude;
   }
 }
 

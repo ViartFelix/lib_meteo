@@ -13,12 +13,9 @@ use Viartfelix\Freather\meteo\{
 
 class Freather {
   private Config $config;
-
-  private mixed $actuResponse;
-  private mixed $previResponse;
-  private mixed $carteResponse;
-
-  public Config $previousConfig;
+  private Actu $actu;
+  private Carte $carte;
+  private Previsions $previsions;
 
   function __construct(
     array $init=array(
@@ -36,110 +33,149 @@ class Freather {
       "measurement"=>$init["measurement"] ?? null,
       "timestamps"=>$init["timestamps"] ?? null,
     ]);
+
+    $this->actu = new Actu($this->config);
+    $this->carte = new Carte($this->config);
+    $this->previsions = new Previsions($this->config);
   }
 
-  public function defineConfig(
-    array $config=array(
-      "apiKey"=>null,
-      "apiEntrypoint"=>null,
-      "lang"=>"en",
-      "measurement"=>true,
-      "timestamps"=>0,
-    )
-  ) {
-    $this->previousConfig=$this->config;
+  /* ---------------------------------------- Class-specific methods ---------------------------------------- */
 
-    $this->config=new Config([
-      "apiKey" => $config["apiKey"] ?? $this->previousConfig->apiKey,
-      "apiEntrypoint" => $config["entrypoint"] ?? $this->previousConfig->apiEntrypoint,
-      "lang" => $config["lang"] ?? $this->previousConfig->lang,
-      "measurement" => $config["measurement"] ?? $this->previousConfig->lang,
-      "timestamps" => $config["timestamps"] ?? $this->previousConfig->timestamps,
-    ]);
-
+   /* ------------------------- Config ------------------------- */
+  public function defineConfig(array $config): Freather
+  {
+    $this->config->defineConfig($config);
     return $this;
   }
 
-  public function rollbackConfig() {
-    if(isset($this->previousConfig)) $this->config=$this->previousConfig;
-    else throw new FreatherException("No previous config to rollback to.");
-    
+  public function rollbackConfig(): Freather
+  {
+    $this->config->rollbackConfig();
     return $this;
   }
 
-   /* ---------------------------------------- Fetchers ---------------------------------------- */  
-
-  /** Fonction qui permet de récupérer la météo actuelle */
-  function fetchActu(string|float $lat, string|float $lon, bool $raw) {
-    $actu=new Actu(
-      $this->config,
-      floatval($lat),
-      floatval($lon),
+  /* ------------------------- Actu ------------------------- */
+  public function fetchActu(string|float $latitude, string|float $longitude): Freather
+  {
+    $this->actu->fetchActu(
+      floatval($latitude),
+      floatval($longitude),
     );
 
-    $actu->exec();
-
-    $this->actuResponse = $raw===true ? $actu->getRaw() : $actu->get();
-
     return $this;
   }
 
+  public function getActu(bool $raw = false): mixed
+  {
+    return $this->actu->returnResults($raw);
+  }
+
+  /* ------------------------- Carte ------------------------- */
   /** Fonction qui permet de récupérer le lien vers la carte */
-  function fetchMap(int $zoom, int $x, int $y) {
+  public function fetchMap(int $zoom, int $x, int $y)
+  {
+    $this->carte->fetchMap($zoom,$x,$y);
+    return $this;
+  }
 
-    $map = new Carte(
-      $this->config,
-      $zoom,
-      $x,
-      $y,
+  public function getMap(): mixed
+  {
+    return $this->carte->getLink();
+  }
+
+  /* ------------------------- Prévisions ------------------------- */
+  /** Fonction qui permet de récupérer les préivisions météo */
+  function fetchPrevisions(string|float $lat, string|float $lon, string|int $timestamps=null, bool $raw): Freather
+  {
+    $this->previsions->fetchPrevisions(
+      floatval($lon),
+      floatval($lat)
     );
-
-    $this->carteResponse=$map->getLink();
 
     return $this;
   }
 
-  /** Fonction qui permet de récupérer les préivisions météo */
-  function fetchPrevi(string|float $lat, string|float $lon, string|int $timestamps=null, bool $raw) {
-    $previ=new Previsions(
-      $this->config,
-      floatval($lat),
-      floatval($lon),
-      isset($timestamps) ? intval($timestamps) : null,
-    );
-
-    $previ->exec();
-
-    $this->previResponse = $raw===true ? $previ->getRaw() : $previ->get();
-    
-    return $this;
+  public function getPrevisions(bool $raw = false): mixed
+  {
+    return $this->actu->returnResults($raw);
   }
 
   /* ---------------------------------------- Getters and setters ---------------------------------------- */
 
-  function setKey(string $key) {
-    $this->config->apiKey=$key;
+  /* ------------------------- Actu ------------------------- */
 
-    return $this;
+  /* ------------------------- Carte ------------------------- */
+
+  /* ------------------------- Previsions ------------------------- */
+
+  /* ------------------------- Config ------------------------- */
+
+  public function getConfig(): array
+  {
+    return $this->config->getConfig();
   }
 
-  function getKey(): string {
-    return $this->config->apiKey;
+  public function getLastConfig(): array
+  {
+    return $this->config->getLastConfig();
   }
 
-  //No setters for responses. The setters are the fetch methods.
-
-  function getActu() {
-    return $this->actuResponse;
+  public function setConfig(array $config): void
+  {
+    $this->defineConfig($config);
   }
 
-  function getPrevi() {
-    return $this->previResponse;
+  /*
+  public function getApiKey(): string
+  {
+    return $this->config->getApiKey();
   }
 
-  function getMap() {
-    return $this->carteResponse;
+  public function setApiKey(string $key): void
+  {
+    $this->config->setApiKey($key);
   }
+
+  public function getApiEntrypoint(): string
+  {
+    return $this->config->getApiEntrypoint();
+  }
+
+  public function setApiEntrypoint(string $entrypoint): void
+  {
+    $this->config->setApiEntrypoint($entrypoint);
+  }
+
+  public function getLang(): string
+  {
+    return $this->config->getLang();
+  }
+
+  public function setLang(string $lang): void
+  {
+    $this->config->setLang($lang);
+  }
+
+  public function getUnit(): string
+  {
+    return $this->config->getUnit();
+  }
+
+  public function setUnit(string $unit): void
+  {
+    $this->config->setUnit($unit);
+  }
+
+  public function getTimestamps(): int
+  {
+    return $this->config->getTimestamps();
+  }
+
+  public function setTimestamps(int $timstamps): void
+  {
+    $this->config->setTimestamps($timstamps);
+  }
+  */
 }
 
 ?>

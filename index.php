@@ -2,7 +2,7 @@
 //THIS IS A TEST FILE
 require __DIR__."/vendor/autoload.php";
 use Spatie\Ignition\Ignition;
-//Ignition::make()->register();
+Ignition::make()->register();
 
 use Viartfelix\Freather\Exceptions\FreatherException as FreatherException;
 use Viartfelix\Freather\Freather;
@@ -11,8 +11,27 @@ $a=new Freather([
   "apiKey"=>"da12be2d8d525a3ef78aff509a1b0cad",
   "lang"=>"fr",
   "measurement"=>"metric",
-  "timestamps"=>"56"
+  "timestamps"=>56
 ]);
+
+$j=$a->fetchActu(
+  5.552151,
+  65.5,
+)->getActu(false);
+
+var_dump($j);
+
+echo "<br/><br/><br/>";
+
+$a->defineConfig([
+  "lang"=>"kr",
+]);
+
+$h = $a->fetchActu(
+  5.552151,
+  65.5,
+)->getActu(false);
+var_dump($h);
 
 /*
 //var_dump($a);
@@ -70,7 +89,9 @@ foreach ($hey as $key => $value) {
 //   var_dump($e);
 // }
 
+/*
 $test = $a->fetchMap(3,5,3)->getMap();
 var_dump($test);
+*/
 
 ?>
