@@ -51,6 +51,9 @@ class Previsions {
         ],
       ]
     );
+
+    $this->response=json_decode($this->rawResponse->getContent());
+    var_dump($this->response);
   }
 
   public function returnResults(bool $raw): mixed
@@ -65,7 +68,7 @@ class Previsions {
 
   public function get(): mixed
   {
-    return json_decode($this->getRaw());
+    return $this->response;
   }
 
   public function setLong(float $long): void

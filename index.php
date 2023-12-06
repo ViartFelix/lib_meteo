@@ -14,84 +14,11 @@ $a=new Freather([
   "timestamps"=>56
 ]);
 
-$j=$a->fetchActu(
-  5.552151,
-  65.5,
-)->getActu(false);
+$j = $a->fetchPrevisions(
+  "50.623790",
+  3.097328,
+)->getPrevisions(false);
 
 var_dump($j);
-
-echo "<br/><br/><br/>";
-
-$a->defineConfig([
-  "lang"=>"kr",
-]);
-
-$h = $a->fetchActu(
-  5.552151,
-  65.5,
-)->getActu(false);
-var_dump($h);
-
-/*
-//var_dump($a);
-
-$j=$a->fetchActu(
-  50.639129,
-  3.074458,
-  false,
-)->getActu();
-
-echo "<br/><br/><br/>";
-$a->defineConfig([
-  "lang"=>"kr",
-  "timestamps"=>25,
-]);
-
-$k=$a->fetchActu(
-  50.639129,
-  3.074458,
-  false,
-)->getActu();
-
-//var_dump($k);
-echo "<br/><br/><br/>";
-
-
-$l=$a->rollbackConfig()->fetchActu(
-  50.639129,
-  3.074458,
-  false,
-)->getActu();
-
-var_dump($l);
-echo "<br/><br/><br/>";
-
-
-
-$hey=$a->fetchPrevi(
-  50.639129,
-  3.074458,
-  10,
-  false,
-)->getPrevi();
-
-foreach ($hey as $key => $value) {
-  echo "<br/><br/><br/><br/><br/>";
-  echo $key. " | ";
-  var_dump($value);
-}
-*/
-
-// try {
-//   throw new FreatherException("hello");
-// } catch(FreatherException $e) {
-//   var_dump($e);
-// }
-
-/*
-$test = $a->fetchMap(3,5,3)->getMap();
-var_dump($test);
-*/
 
 ?>

@@ -85,7 +85,7 @@ class Freather {
 
   /* ------------------------- Prévisions ------------------------- */
   /** Fonction qui permet de récupérer les préivisions météo */
-  function fetchPrevisions(string|float $lat, string|float $lon, string|int $timestamps=null, bool $raw): Freather
+  function fetchPrevisions(string|float $lat, string|float $lon): Freather
   {
     $this->previsions->fetchPrevisions(
       floatval($lon),
@@ -97,16 +97,10 @@ class Freather {
 
   public function getPrevisions(bool $raw = false): mixed
   {
-    return $this->actu->returnResults($raw);
+    return $this->previsions->returnResults($raw);
   }
 
   /* ---------------------------------------- Getters and setters ---------------------------------------- */
-
-  /* ------------------------- Actu ------------------------- */
-
-  /* ------------------------- Carte ------------------------- */
-
-  /* ------------------------- Previsions ------------------------- */
 
   /* ------------------------- Config ------------------------- */
 
@@ -124,58 +118,6 @@ class Freather {
   {
     $this->defineConfig($config);
   }
-
-  /*
-  public function getApiKey(): string
-  {
-    return $this->config->getApiKey();
-  }
-
-  public function setApiKey(string $key): void
-  {
-    $this->config->setApiKey($key);
-  }
-
-  public function getApiEntrypoint(): string
-  {
-    return $this->config->getApiEntrypoint();
-  }
-
-  public function setApiEntrypoint(string $entrypoint): void
-  {
-    $this->config->setApiEntrypoint($entrypoint);
-  }
-
-  public function getLang(): string
-  {
-    return $this->config->getLang();
-  }
-
-  public function setLang(string $lang): void
-  {
-    $this->config->setLang($lang);
-  }
-
-  public function getUnit(): string
-  {
-    return $this->config->getUnit();
-  }
-
-  public function setUnit(string $unit): void
-  {
-    $this->config->setUnit($unit);
-  }
-
-  public function getTimestamps(): int
-  {
-    return $this->config->getTimestamps();
-  }
-
-  public function setTimestamps(int $timstamps): void
-  {
-    $this->config->setTimestamps($timstamps);
-  }
-  */
 }
 
 ?>

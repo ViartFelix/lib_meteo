@@ -46,8 +46,8 @@ class Actu {
         "query"=>[
           "lang"=>$this->config->getLang(),
           "measurement"=>$this->config->getUnit(),
-          "lat"=>$this->latitude,
-          "lon"=>$this->longitude,
+          "lat"=>$this->getLat(),
+          "lon"=>$this->getLon(),
           "appid"=>$this->config->getApiKey(),
         ],
       ],
@@ -56,19 +56,9 @@ class Actu {
     $this->response = json_decode($this->rawResponse->getContent());
   }
 
-  public function returnResults(bool $raw): mixed
+  public function returnResults(bool $raw = false): mixed
   {
     return ($raw ? $this->getRawResponse() : $this->getResponse());
-  }
-
-  
-
-  public function getRaw() {
-    return $this->rawResponse;
-  }
-
-  public function get() {
-    return $this->response;
   }
 
   public function getLat(): float
