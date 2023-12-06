@@ -12,6 +12,7 @@ class Previsions {
   private float $latitude;
   private mixed $rawResponse;
   private mixed $response;
+  private array $options = array();
 
   private $client;
   
@@ -20,21 +21,22 @@ class Previsions {
     $this->config=&$config;
   }
 
-  public function fetchPrevisions(float $lon, float $lat): void
+  public function fetchPrevisions(float $lon, float $lat, array $options=array()): void
   {
     $this->setLong($lon);
     $this->setLat($lat);
+    $this->setOptions($options);
 
     $this->prepare();
     $this->exec();
   }
 
-  public function prepare(): void
+  private function prepare(): void
   {
     $this->client = HttpClient::create();
   }
 
-  public function exec(): void
+  private function exec(): void
   {
     $this->rawResponse=$this->client->request(
       "GET",
@@ -42,18 +44,20 @@ class Previsions {
       [
         "verify_peer"=>false,
         "query"=>[
-          "lang"=>$this->config->getLang(),
-          "measurement"=>$this->config->getUnit(),
-          "lat"=>$this->latitude,
-          "lon"=>$this->longitude,
-          "appid"=>$this->config->getApiKey(),
-          "cnt"=>$this->config->getTimestamps(),
+          "lat" => $this->getLat(),
+          "lon" => $this->getLong(),
+          "appid" => $this->config->getApiKey(),
+
+          "units" => $this->getOptions()["units"] ?? $this->config->getUnit() ?? "standard",
+          "mode" => $this->getOptions()["mode"] ?? "json",
+          "cnt" => $this->getOptions()["cnt"] ?? $this->getOptions()["timestamps"] ?? $this->config->getTimestamps() ?? 1,
+          
+          "lang" => $this->config->getLang(),
         ],
       ]
     );
 
     $this->response=json_decode($this->rawResponse->getContent());
-    var_dump($this->response);
   }
 
   public function returnResults(bool $raw): mixed
@@ -89,6 +93,16 @@ class Previsions {
   public function getLat(): float
   {
     return $this->latitude;
+  }
+
+  public function setOptions(array $options): void
+  {
+    $this->options = $options;
+  }
+
+  public function getOptions(): array
+  {
+    return $this->options;
   }
 }
 

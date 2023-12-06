@@ -13,10 +13,10 @@ $a=new Freather([
   "timestamps"=>56
 ]);
 
-$j = $a->fetchActu(
+$j = $a->fetchPrevisions(
   5.5,
   5.56,
-)->getActu();
+)->getPrevisions();
 
 var_dump($j);
 

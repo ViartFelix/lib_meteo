@@ -86,11 +86,12 @@ class Freather {
 
   /* ------------------------- Prévisions ------------------------- */
   /** Fonction qui permet de récupérer les préivisions météo */
-  function fetchPrevisions(string|float $lat, string|float $lon): Freather
+  function fetchPrevisions(string|float|int $lat, string|float|int $lon, array $options=array()): Freather
   {
     $this->previsions->fetchPrevisions(
       floatval($lon),
-      floatval($lat)
+      floatval($lat),
+      $options,
     );
 
     return $this;
