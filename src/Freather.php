@@ -72,9 +72,9 @@ class Freather {
 
   /* ------------------------- Carte ------------------------- */
   /** Fonction qui permet de récupérer le lien vers la carte */
-  public function fetchMap(int $zoom, int $x, int $y)
+  public function fetchMap(int $zoom, int $x, int $y, $op, array $options=[])
   {
-    $this->carte->fetchMap($zoom,$x,$y);
+    $this->carte->fetchMap($zoom, $x, $y, $op, $options);
     return $this;
   }
 
