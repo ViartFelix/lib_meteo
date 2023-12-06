@@ -11,6 +11,7 @@ class Actu {
   private Config $config;
   private float $longitude;
   private float $latitude;
+  private array $options;
 
   private $client;
 
@@ -22,21 +23,23 @@ class Actu {
     $this->config = &$config;
   }
 
-  public function fetchActu(float $lat, float $long)
+  public function fetchActu(float $lat, float $long, array $options): void
   {
     $this->setLat($lat);
     $this->setLon($long);
+
+    $this->setOptions($options);
 
     $this->prepare();
     $this->exec();
   }
 
-  public function prepare(): void
+  private function prepare(): void
   {
     $this->client = HttpClient::create();
   }
 
-  public function exec(): void
+  private function exec(): void
   {
     $this->rawResponse = $this->client->request(
       "GET",
@@ -44,11 +47,13 @@ class Actu {
       [
         "verify_peer"=>false,
         "query"=>[
-          "lang"=>$this->config->getLang(),
-          "measurement"=>$this->config->getUnit(),
-          "lat"=>$this->getLat(),
-          "lon"=>$this->getLon(),
-          "appid"=>$this->config->getApiKey(),
+          "lat" => $this->getLat(),
+          "lon" => $this->getLon(),
+          "appid" => $this->config->getApiKey(),
+
+          "lang" => $this->getOptions()["lang"] ?? $this->config->getLang() ?? "en",
+          "mode" => $this->getOptions()["mode"] ?? "json",
+          "units" => $this->getOptions()["unit"] ?? $this->config->getUnit() ?? "standard",
         ],
       ],
     );
@@ -89,6 +94,16 @@ class Actu {
   public function getRawResponse(): mixed
   {
     return $this->rawResponse;
+  }
+
+  public function setOptions(array $options): void
+  {
+    $this->options = $options;
+  }
+
+  public function getOptions(): array
+  {
+    return $this->options;
   }
 }
 

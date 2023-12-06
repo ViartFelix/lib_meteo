@@ -55,11 +55,12 @@ class Freather {
   }
 
   /* ------------------------- Actu ------------------------- */
-  public function fetchActu(string|float $latitude, string|float $longitude): Freather
+  public function fetchActu(string|float $latitude, string|float $longitude, array $options=array()): Freather
   {
     $this->actu->fetchActu(
       floatval($latitude),
       floatval($longitude),
+      $options,
     );
 
     return $this;
@@ -72,7 +73,7 @@ class Freather {
 
   /* ------------------------- Carte ------------------------- */
   /** Fonction qui permet de récupérer le lien vers la carte */
-  public function fetchMap(int $zoom, int $x, int $y, $op, array $options=[])
+  public function fetchMap(int $zoom, int $x, int $y, $op, array $options=array()): Freather
   {
     $this->carte->fetchMap($zoom, $x, $y, $op, $options);
     return $this;

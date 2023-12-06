@@ -4,6 +4,10 @@ namespace Viartfelix\Freather\Config;
 
 use Viartfelix\Freather\Exceptions\FreatherException;
 
+
+//TODO: modes de réponse préféré
+//TODO: entrypoints API de la carte, prévision et actu
+
 class Config {
   private string $apiKey;
   private string $apiEntrypoint="https://api.openweathermap.org/data/2.5/";
