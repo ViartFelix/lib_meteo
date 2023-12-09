@@ -40,7 +40,7 @@ class Previsions {
   {
     $this->rawResponse=$this->client->request(
       "GET",
-      $this->config->getApiEntrypoint() . "forecast",
+      $this->config->getPreviEntrypoint(),
       [
         "verify_peer"=>false,
         "query"=>[
@@ -49,7 +49,7 @@ class Previsions {
           "appid" => $this->config->getApiKey(),
 
           "units" => $this->getOptions()["units"] ?? $this->config->getUnit() ?? "standard",
-          "mode" => $this->getOptions()["mode"] ?? "json",
+          "mode" => strtolower($this->getOptions()["mode"]) ?? "json",
           "cnt" => $this->getOptions()["cnt"] ?? $this->getOptions()["timestamps"] ?? $this->config->getTimestamps() ?? 1,
           
           "lang" => $this->config->getLang(),

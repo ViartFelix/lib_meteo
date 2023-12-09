@@ -43,7 +43,7 @@ class Actu {
   {
     $this->rawResponse = $this->client->request(
       "GET",
-      $this->config->getApiEntrypoint() . "weather",
+      $this->config->getActuEntrypoint(),
       [
         "verify_peer"=>false,
         "query"=>[

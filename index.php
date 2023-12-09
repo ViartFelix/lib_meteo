@@ -13,11 +13,8 @@ $a=new Freather([
   "timestamps"=>56
 ]);
 
-$j = $a->fetchPrevisions(
-  5.5,
-  5.56,
-)->getPrevisions();
 
-var_dump($j);
+
+//https://api.openweathermap.org/data/2.5/weather?lat=50.6232405&lon=3.0978745&appid=da12be2d8d525a3ef78aff509a1b0cad
 
 ?>

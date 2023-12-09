@@ -113,7 +113,7 @@ class Carte {
 
   private function linkConstruct(): void
   {
-    $link = "http://maps.openweathermap.org/maps/2.0/weather";
+    $link = $this->config->getMapEntrypoint();
     $link .= "/".$this->getOP();
     $link .= "/".$this->getZoom();
     $link .= "/".$this->getX();

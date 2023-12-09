@@ -10,12 +10,22 @@ use Viartfelix\Freather\Exceptions\FreatherException;
 
 class Config {
   private string $apiKey;
-  private string $apiEntrypoint="https://api.openweathermap.org/data/2.5/";
+
+  private string $defaultActuEntrypoint = "https://api.openweathermap.org/data/2.5/weather";
+  private string $actuEntrypoint = "https://api.openweathermap.org/data/2.5/weather";
+
+  private string $defaultPreviEntrypoint = "https://api.openweathermap.org/data/2.5/forecast";
+  private string $previEntrypoint = "https://api.openweathermap.org/data/2.5/forecast";
+
+  private string $defaultMapEntrypoint = "http://maps.openweathermap.org/maps/2.0/weather";
+  private string $mapEntrypoint = "http://maps.openweathermap.org/maps/2.0/weather";
+
   private string $lang;
   private string $unit;
   private int $timestamps;
   private array $currConfig;
   private array $lastConfig;
+
 
   public function __construct($config=[
     "apiKey"=>null,
@@ -34,22 +44,31 @@ class Config {
     "measurement"=>true,
     "timestamps"=>0,
   )) {
-    if(isset($this->currConfig)) {
+
+    if(isset($this->currConfig))
+    {
       $this->lastConfig = $this->currConfig;
     }
 
-    $this->apiKey = $config["apiKey"] ?? $this->getApiKey() ?? "";
-    $this->apiEntrypoint = $config["apiEntrypoint"] ?? $this->getApiEntrypoint() ?? "";
-    $this->lang = $config["lang"] ?? $this->getLang() ?? "en";
-    $this->timestamps = $config["timestamps"] ?? $this->getTimestamps() ?? 1;
-    $this->unit = $config["measurement"] ?? $this->getUnit() ?? "standard";
+    $this->setApiKey($config["apiKey"] ?? $this->getApiKey() ?? "");
+    $this->setLang($config["lang"] ?? $this->getLang() ?? "en");
+    $this->setTimestamps($config["timestamps"] ?? $this->getTimestamps() ?? 1);
+    $this->setUnit($config["measurement"] ?? $this->getUnit() ?? "standard");
+
+    $this->setActuEntrypoint($config["actu_entrypoint"] ?? $this->getActuEntrypoint() ?? $this->defaultActuEntrypoint);
+    $this->setMapEntrypoint($config["map_entrypoint"] ?? $this->getMapEntrypoint() ?? $this->defaultMapEntrypoint);
+    $this->setPreviEntrypoint($config["previ_entrypoint"] ?? $this->getPreviEntrypoint() ?? $this->defaultPreviEntrypoint);
 
     $this->currConfig = array(
-      "apiKey"=>$this->apiKey,
-      "apiEntrypoint"=>$this->apiEntrypoint,
-      "lang"=>$this->lang,
-      "measurement"=>$this->timestamps,
-      "timestamps"=>$this->unit,
+      "apiKey" => $this->getApiKey(),
+      "lang" => $this->getLang(),
+      "measurement" => $this->getTimestamps(),
+      "timestamps" => $this->getUnit(),
+
+      "actu_entrypoint" => $this->getActuEntrypoint(),
+      "map_entrypoint" => $this->getMapEntrypoint(),
+      "previ_entrypoint" => $this->getPreviEntrypoint(),
+      
     );
   }
 
@@ -86,16 +105,6 @@ class Config {
     $this->apiKey = $key;
   }
 
-  public function getApiEntrypoint(): string
-  {
-    return $this->apiEntrypoint;
-  }
-
-  public function setApiEntrypoint(string $entrypoint): void
-  {
-    $this->apiEntrypoint = $entrypoint;
-  }
-
   public function getLang(): string
   {
     return $this->lang;
@@ -124,6 +133,36 @@ class Config {
   public function setTimestamps(int $timstamps): void
   {
     $this->timestamps = $timstamps;
+  }
+
+  public function getActuEntrypoint(): string
+  {
+    return $this->actuEntrypoint;
+  }
+
+  public function setActuEntrypoint(string $actuEntrypoint): void
+  {
+    $this->actuEntrypoint = $actuEntrypoint;
+  }
+
+  public function getPreviEntrypoint(): string
+  {
+    return $this->previEntrypoint;
+  }
+
+  public function setPreviEntrypoint(string $previEntrypoint): void
+  {
+    $this->previEntrypoint = $previEntrypoint;
+  }
+
+  public function getMapEntrypoint(): string
+  {
+    return $this->mapEntrypoint;
+  }
+
+  public function setMapEntrypoint(string $mapEntrypoint): void
+  {
+    $this->mapEntrypoint = $mapEntrypoint;
   }
 }
 
