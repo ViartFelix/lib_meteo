@@ -13,53 +13,8 @@ class Carte extends BaseService {
     private string $op;
     private array $options = array();
 
-    /**  @var string Convective precipitation (mm) */
-    public const PAC0 = "PAC0";
-
-    /**  @var string Precipitation intensity (mm/s) */
-    public const PR0 = "PR0";
-
-    /**  @var string Accumulated precipitation (mm) */
-    public const PA0 = "PA0";
-
-    /**  @var string Accumulated precipitation - rain (mm) */
-    public const PAR0 = "PAR0";
-
-    /**  @var string Accumulated precipitation - snow (mm) */
-    public const PAS0 = "PAS0";
-
-    /**  @var string Depth of snow (m) */
-    public const SD0 = "SD0";
-
-    /**  @var string Wind speed at an altitude of 10 meters (m/s) */
-    public const WS10 = "WS10";
-
-    /**  @var string Joint display of speed wind (color) and wind direction (arrows), received by U and V components  (m/s) */
-    public const WND = "WND";
-
-    /**  @var string Atmospheric pressure on mean sea level (hPa) */
-    public const APM = "APM";
-
-    /**  @var string Air temperature at a height of 2 meters (°C) */
-    public const TA2 = "TA2";
-
-    /**  @var string Temperature of a dew point (°C) */
-    public const TD2 = "TD2";
-
-    /**  @var string Soil temperature 0-10 сm (K) */
-    public const TS0 = "TS0";
-
-    /**  @var string Soil temperature >10 сm (K) */
-    public const TS10 = "TS10";
-
-    /**  @var string Relative humidity (%) */
-    public const HRD0 = "HRD0";
-
-    /**  @var string Cloudiness (%) */
-    public const CL = "CL";
-
     private string $link;
-    private string $compiledOptions="&";
+    private string $compiledOptions="";
 
     function __construct(Config &$config)
     {
@@ -87,9 +42,9 @@ class Carte extends BaseService {
     {
         if(isset($this->getOptions()["date"])) {
             $date = strtotime($this->getOptions()["date"]);
-            $this->compiledOptions .= "date=".(gettype($date)!=="boolean" ? $date : time());
+            $this->compiledOptions .= "&date=".(gettype($date)!=="boolean" ? $date : time());
         } else {
-            $this->compiledOptions .= "date=".time();
+            $this->compiledOptions .= "&date=".time();
         }
 
         $this->compiledOptions .= "&opacity=" . ($this->getOptions()["opacity"] ?? "0.8");
