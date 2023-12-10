@@ -1,3 +1,4 @@
 .conf
 /vendor/
 index.php
+tmp/

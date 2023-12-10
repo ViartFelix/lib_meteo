@@ -2,7 +2,8 @@
 
 namespace Viartfelix\Freather\interfaces;
 
-interface Adresses {
+interface Adresses
+{
     public function convertToQuery();
     public function storeAdrInfos();
 }

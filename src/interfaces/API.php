@@ -2,7 +2,8 @@
 
 namespace Viartfelix\Freather\interfaces;
 
-interface API {
+interface API
+{
     public function fetch(int $service);
     public function getRes();
 }

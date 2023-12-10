@@ -11,8 +11,6 @@ use Viartfelix\Freather\meteo\{
   Carte,
 };
 
-//TODO: constantes de Carte ici.
-
 class Freather {
 	private Config $config;
 	private Actu $actu;
@@ -22,18 +20,24 @@ class Freather {
 	function __construct(
 		array $init=array(
 			"apiKey"=>null,
-			"apiEntrypoint"=>null,
 			"lang"=>"en",
 			"measurement"=>true,
 			"timestamps"=>1,
+
+            "actuEntrypoint"=>null,
+            "mapEntrypoint"=>null,
+            "previEntrypoint"=>null,
 		),
 	) {
-		$this->config=new Config([
+		$this->config=new Config ([
 			"apiKey"=>$init["apiKey"] ?? null,
-			"apiEntrypoint"=>$init["apiEntrypoint"] ?? null,
 			"lang"=>$init["lang"] ?? null,
 			"measurement"=>$init["measurement"] ?? null,
 			"timestamps"=>$init["timestamps"] ?? null,
+
+            "actuEntrypoint" => $init["actuEntrypoint"] ?? null,
+            "mapEntrypoint" => $init["mapEntrypoint"] ?? null,
+            "previEntrypoint" => $init["previEntrypoint"] ?? null,
 		]);
 
 		$this->actu = new Actu($this->config);

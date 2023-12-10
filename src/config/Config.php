@@ -22,22 +22,33 @@ class Config {
     private array $currConfig;
     private array $lastConfig;
 
+    private int $cacheDuration;
+
     public function __construct($config=[
         "apiKey"=>null,
-        "apiEntrypoint"=>null,
         "lang"=>"en",
         "measurement"=>"standard",
         "timestamps"=>null,
+        "cacheDuration"=>3600,
+
+        "actuEntrypoint"=>null,
+        "mapEntrypoint"=>null,
+        "previEntrypoint"=>null,
     ]) {
         $this->defineConfig($config);
     }
 
     public function defineConfig(array $config=array(
         "apiKey"=>null,
-        "apiEntrypoint"=>null,
         "lang"=>"en",
         "measurement"=>true,
         "timestamps"=>0,
+
+        "actuEntrypoint"=>null,
+        "mapEntrypoint"=>null,
+        "previEntrypoint"=>null,
+
+        "cacheDuration"=>3600,
     )) {
 
         if(isset($this->currConfig))
@@ -52,9 +63,11 @@ class Config {
         $this->setTimestamps($config["timestamps"] ?? $this->getTimestamps() ?? 1);
         $this->setUnit($config["measurement"] ?? $this->getUnit() ?? "standard");
 
-        $this->setActuEntrypoint($config["actu_entrypoint"] ?? $this->getActuEntrypoint() ?? $this->defaultActuEntrypoint);
-        $this->setMapEntrypoint($config["map_entrypoint"] ?? $this->getMapEntrypoint() ?? $this->defaultMapEntrypoint);
-        $this->setPreviEntrypoint($config["previ_entrypoint"] ?? $this->getPreviEntrypoint() ?? $this->defaultPreviEntrypoint);
+        $this->setActuEntrypoint($config["actuEntrypoint"] ?? $this->getActuEntrypoint() ?? $this->defaultActuEntrypoint);
+        $this->setMapEntrypoint($config["mapEntrypoint"] ?? $this->getMapEntrypoint() ?? $this->defaultMapEntrypoint);
+        $this->setPreviEntrypoint($config["previEntrypoint"] ?? $this->getPreviEntrypoint() ?? $this->defaultPreviEntrypoint);
+
+        $this->setCacheDuration($config["cacheDuration"] ?? $this->getCacheDuration() ?? 3600);
 
         $this->currConfig = array(
             "apiKey" => $this->getApiKey(),
@@ -62,10 +75,11 @@ class Config {
             "measurement" => $this->getTimestamps(),
             "timestamps" => $this->getUnit(),
 
-            "actu_entrypoint" => $this->getActuEntrypoint(),
-            "map_entrypoint" => $this->getMapEntrypoint(),
-            "previ_entrypoint" => $this->getPreviEntrypoint(),
+            "actuEntrypoint" => $this->getActuEntrypoint(),
+            "mapEntrypoint" => $this->getMapEntrypoint(),
+            "previEntrypoint" => $this->getPreviEntrypoint(),
             
+            "cacheDuration" => $this->getCacheDuration(),
         );
     }
 
@@ -160,6 +174,16 @@ class Config {
     public function setMapEntrypoint(string $mapEntrypoint): void
     {
         $this->mapEntrypoint = $mapEntrypoint;
+    }
+
+    public function getCacheDuration(): int|null
+    {
+        return $this->cacheDuration ?? null;
+    }
+
+    public function setCacheDuration(int $duration): void
+    {
+        $this->cacheDuration = $duration;
     }
 }
 
