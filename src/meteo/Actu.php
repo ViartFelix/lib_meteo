@@ -2,109 +2,83 @@
 
 namespace Viartfelix\Freather\meteo;
 
-use Illuminate\Support\Facades\Http;
+use Viartfelix\Freather\common\BaseService;
 use Viartfelix\Freather\Config\Config;
-use Symfony\Component\HttpClient\HttpClient;
+
 use Viartfelix\Freather\Exceptions\FreatherException;
 
-class Actu {
-  private Config $config;
-  private float $longitude;
-  private float $latitude;
-  private array $options;
+class Actu extends BaseService {
+	private float $longitude;
+	private float $latitude;
+	private array $options;
 
-  private $client;
+	function __construct(Config &$config)
+	{
+		parent::__construct($config);
+	}
 
-  private mixed $rawResponse;
-  private mixed $response;
+	public function fetchActu(float $lat, float $long, array $options): void
+	{
+		$this->setLat($lat);
+		$this->setLon($long);
+		$this->setOptions($options);
 
-  function __construct(Config &$config)
-  {
-    $this->config = &$config;
-  }
+		$this->prepare();
+		$this->exec();
+	}
 
-  public function fetchActu(float $lat, float $long, array $options): void
-  {
-    $this->setLat($lat);
-    $this->setLon($long);
+	private function prepare(): void
+	{}
 
-    $this->setOptions($options);
+	private function exec(): void
+	{
+		$options = $this->getOptions();
+		$options["latitude"] = $this->getLat();
+		$options["longitude"] = $this->getLon();
 
-    $this->prepare();
-    $this->exec();
-  }
+		$this->parseMode($options["mode"] ?? "json");
 
-  private function prepare(): void
-  {
-    $this->client = HttpClient::create();
-  }
+		$err = $this->fetchAndParse(BaseService::ACTU, $options);
 
-  private function exec(): void
-  {
-    $this->rawResponse = $this->client->request(
-      "GET",
-      $this->config->getActuEntrypoint(),
-      [
-        "verify_peer"=>false,
-        "query"=>[
-          "lat" => $this->getLat(),
-          "lon" => $this->getLon(),
-          "appid" => $this->config->getApiKey(),
+		if(isset($err->errCode)) {
+			throw new FreatherException("Error when fetching or parsing response from server. Logs are likely present on top of this error.", $err->errCode);
+		}
+	}
 
-          "lang" => $this->getOptions()["lang"] ?? $this->config->getLang() ?? "en",
-          "mode" => $this->getOptions()["mode"] ?? "json",
-          "units" => $this->getOptions()["unit"] ?? $this->config->getUnit() ?? "standard",
-        ],
-      ],
-    );
+	public function returnResults(bool $raw = false): mixed
+	{
+		return ($this->getRes($raw));
+	}
 
-    $this->response = json_decode($this->rawResponse->getContent());
-  }
+	public function getLat(): float
+	{
+		return $this->latitude;
+	}
 
-  public function returnResults(bool $raw = false): mixed
-  {
-    return ($raw ? $this->getRawResponse() : $this->getResponse());
-  }
+	public function setLat(float $lat): void
+	{
+		$this->latitude = $lat;
+	}
 
-  public function getLat(): float
-  {
-    return $this->latitude;
-  }
+	public function getLon(): float
+	{
+		return $this->longitude;
+	}
 
-  public function setLat(float $lat): void
-  {
-    $this->latitude = $lat;
-  }
+	public function setLon(float $long): void
+	{
+		$this->longitude = $long;
+	}
 
-  public function getLon(): float
-  {
-    return $this->longitude;
-  }
+	public function setOptions(array $options): void
+	{
+		$this->options = $options;
+	}
 
-  public function setLon(float $long): void
-  {
-    $this->longitude = $long;
-  }
-
-  public function getResponse(): mixed
-  {
-    return $this->response;
-  }
-
-  public function getRawResponse(): mixed
-  {
-    return $this->rawResponse;
-  }
-
-  public function setOptions(array $options): void
-  {
-    $this->options = $options;
-  }
-
-  public function getOptions(): array
-  {
-    return $this->options;
-  }
+	public function getOptions(): array
+	{
+		return $this->options;
+	}
 }
 
 ?>

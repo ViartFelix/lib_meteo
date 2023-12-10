@@ -1,9 +1,10 @@
 <?php
 
-namespace Viartfelix\Freather\Adresse;
+namespace Viartfelix\Freather\interfaces;
 
-interface Adresse {
-  
+interface Adresses {
+    public function convertToQuery();
+    public function storeAdrInfos();
 }
 
 ?>

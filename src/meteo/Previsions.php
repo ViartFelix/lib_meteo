@@ -1,109 +1,83 @@
 <?php
 
 namespace Viartfelix\Freather\meteo;
-use Viartfelix\Freather\Adresse\Adresse;
 
+use Viartfelix\Freather\common\BaseService;
 use Viartfelix\Freather\Config\Config;
-use Symfony\Component\HttpClient\HttpClient;
+use Viartfelix\Freather\Exceptions\FreatherException;
 
-class Previsions {
-  private Config $config;
-  private float $longitude;
-  private float $latitude;
-  private mixed $rawResponse;
-  private mixed $response;
-  private array $options = array();
-
-  private $client;
+class Previsions extends BaseService {
+    private float $longitude;
+    private float $latitude;
+    private array $options = array();
   
-  function __construct(Config &$config)
-  {
-    $this->config=&$config;
-  }
+    function __construct(Config &$config)
+    {
+        parent::__construct($config);
+    }
 
-  public function fetchPrevisions(float $lon, float $lat, array $options=array()): void
-  {
-    $this->setLong($lon);
-    $this->setLat($lat);
-    $this->setOptions($options);
+    public function fetchPrevisions(float $lon, float $lat, array $options=array()): void
+    {
+        $this->setLong($lon);
+        $this->setLat($lat);
+        $this->setOptions($options);
 
-    $this->prepare();
-    $this->exec();
-  }
+        $this->prepare();
+        $this->exec();
+    }
 
-  private function prepare(): void
-  {
-    $this->client = HttpClient::create();
-  }
+    private function prepare(): void
+    {}
 
-  private function exec(): void
-  {
-    $this->rawResponse=$this->client->request(
-      "GET",
-      $this->config->getPreviEntrypoint(),
-      [
-        "verify_peer"=>false,
-        "query"=>[
-          "lat" => $this->getLat(),
-          "lon" => $this->getLong(),
-          "appid" => $this->config->getApiKey(),
+    private function exec(): void
+    {
+        $options = $this->getOptions();
+        $options["latitude"] = $this->getLat();
+        $options["longitude"] = $this->getLong();
 
-          "units" => $this->getOptions()["units"] ?? $this->config->getUnit() ?? "standard",
-          "mode" => strtolower($this->getOptions()["mode"]) ?? "json",
-          "cnt" => $this->getOptions()["cnt"] ?? $this->getOptions()["timestamps"] ?? $this->config->getTimestamps() ?? 1,
-          
-          "lang" => $this->config->getLang(),
-        ],
-      ]
-    );
+        $this->parseMode($options["mode"] ?? "json");
 
-    $this->response=json_decode($this->rawResponse->getContent());
-  }
+        $err = $this->fetchAndParse(BaseService::PREVISIONS, $options);
 
-  public function returnResults(bool $raw): mixed
-  {
-    return ($raw ? $this->getRaw() : $this->get());
-  }
+        if(isset($err->errCode)) {
+            throw new FreatherException("Error when fetching or parsing response from server. Logs are likely present on top of this error.", $err->errCode);
+        }
+    }
 
-  public function getRaw(): mixed
-  {
-    return $this->rawResponse;
-  }
+    public function returnResults(bool $raw): mixed
+    {
+        return ($this->getRes($raw));
+    }
 
-  public function get(): mixed
-  {
-    return $this->response;
-  }
+    public function setLong(float $long): void
+    {
+        $this->longitude = $long;
+    }
 
-  public function setLong(float $long): void
-  {
-    $this->longitude = $long;
-  }
+    public function getLong(): float
+    {
+        return $this->longitude;
+    }
 
-  public function getLong(): float
-  {
-    return $this->longitude;
-  }
+    public function setLat(float $lat): void
+    {
+        $this->latitude = $lat;
+    }
 
-  public function setLat(float $lat): void
-  {
-    $this->latitude = $lat;
-  }
+    public function getLat(): float
+    {
+        return $this->latitude;
+    }
 
-  public function getLat(): float
-  {
-    return $this->latitude;
-  }
+    public function setOptions(array $options): void
+    {
+        $this->options = $options;
+    }
 
-  public function setOptions(array $options): void
-  {
-    $this->options = $options;
-  }
-
-  public function getOptions(): array
-  {
-    return $this->options;
-  }
+    public function getOptions(): array
+    {
+        return $this->options;
+    }
 }
 
 ?>
