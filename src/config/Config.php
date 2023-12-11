@@ -4,6 +4,7 @@ namespace Viartfelix\Freather\Config;
 
 use Viartfelix\Freather\Exceptions\FreatherException;
 
+
 class Config {
     private string $apiKey;
 
@@ -22,18 +23,24 @@ class Config {
     private array $currConfig;
     private array $lastConfig;
 
-    private int $cacheDuration;
+    private Cache $cache;
+
+    //Public to be able to be passed by reference across all library
+    public int $cacheDuration;
+    private int $defaultCacheDuration = -1;
 
     public function __construct($config=[
         "apiKey"=>null,
         "lang"=>"en",
         "measurement"=>"standard",
         "timestamps"=>null,
-        "cacheDuration"=>3600,
 
         "actuEntrypoint"=>null,
         "mapEntrypoint"=>null,
         "previEntrypoint"=>null,
+
+        "cacheDuration"=>-1,
+        "cacheDir"=>null,
     ]) {
         $this->defineConfig($config);
     }
@@ -48,7 +55,8 @@ class Config {
         "mapEntrypoint"=>null,
         "previEntrypoint"=>null,
 
-        "cacheDuration"=>3600,
+        "cacheDuration"=>-1,
+        "cacheDir"=>null,
     )) {
 
         if(isset($this->currConfig))
@@ -67,7 +75,12 @@ class Config {
         $this->setMapEntrypoint($config["mapEntrypoint"] ?? $this->getMapEntrypoint() ?? $this->defaultMapEntrypoint);
         $this->setPreviEntrypoint($config["previEntrypoint"] ?? $this->getPreviEntrypoint() ?? $this->defaultPreviEntrypoint);
 
-        $this->setCacheDuration($config["cacheDuration"] ?? $this->getCacheDuration() ?? 3600);
+        $this->setCacheDuration($config["cacheDuration"] ?? $this->getCacheDuration() ?? $this->defaultCacheDuration);
+
+        if(!isset($this->cache))
+        {
+            $this->cache = new Cache($this->cacheDuration);
+        }
 
         $this->currConfig = array(
             "apiKey" => $this->getApiKey(),
@@ -78,7 +91,7 @@ class Config {
             "actuEntrypoint" => $this->getActuEntrypoint(),
             "mapEntrypoint" => $this->getMapEntrypoint(),
             "previEntrypoint" => $this->getPreviEntrypoint(),
-            
+
             "cacheDuration" => $this->getCacheDuration(),
         );
     }
@@ -181,9 +194,9 @@ class Config {
         return $this->cacheDuration ?? null;
     }
 
-    public function setCacheDuration(int $duration): void
+    public function setCacheDuration(int $seconds): void
     {
-        $this->cacheDuration = $duration;
+        $this->cacheDuration = $seconds;
     }
 }
 

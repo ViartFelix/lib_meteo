@@ -3,6 +3,7 @@
 namespace Viartfelix\Freather\meteo;
 
 use Viartfelix\Freather\common\BaseService;
+use Viartfelix\Freather\config\Cache;
 use Viartfelix\Freather\Config\Config;
 use Viartfelix\Freather\Exceptions\FreatherException;
 
@@ -11,9 +12,9 @@ class Previsions extends BaseService {
     private float $latitude;
     private array $options = array();
   
-    function __construct(Config &$config)
+    function __construct(Config &$config, Cache &$cache)
     {
-        parent::__construct($config);
+        parent::__construct($config, $cache);
     }
 
     public function fetchPrevisions(float $lon, float $lat, array $options=array()): void

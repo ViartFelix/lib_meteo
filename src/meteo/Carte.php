@@ -3,6 +3,7 @@
 namespace Viartfelix\Freather\meteo;
 
 use Viartfelix\Freather\common\BaseService;
+use Viartfelix\Freather\config\Cache;
 use Viartfelix\Freather\Config\Config;
 
 class Carte extends BaseService {

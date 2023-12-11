@@ -2,7 +2,11 @@
 
 namespace Viartfelix\Freather;
 
-use Viartfelix\Freather\Config\Config;
+use Viartfelix\Freather\Config\{
+    Config,
+    Cache,
+};
+
 use Viartfelix\Freather\Exceptions\FreatherException;
 
 use Viartfelix\Freather\meteo\{
@@ -11,8 +15,12 @@ use Viartfelix\Freather\meteo\{
   Carte,
 };
 
+//TODO: debug function (like toString): which is a ton of var_dumps echoed.
+//TODO: fetchGet(Service): fetch and get at the same time.
+
 class Freather {
 	private Config $config;
+    private Cache $cache;
 	private Actu $actu;
 	private Carte $carte;
 	private Previsions $previsions;
@@ -21,13 +29,15 @@ class Freather {
 		array $init=array(
 			"apiKey"=>null,
 			"lang"=>"en",
-			"measurement"=>true,
+			"measurement"=>"standard",
 			"timestamps"=>1,
 
             "actuEntrypoint"=>null,
             "mapEntrypoint"=>null,
             "previEntrypoint"=>null,
 		),
+        
+        int $cacheDuration = -1,
 	) {
 		$this->config=new Config ([
 			"apiKey"=>$init["apiKey"] ?? null,
@@ -38,11 +48,18 @@ class Freather {
             "actuEntrypoint" => $init["actuEntrypoint"] ?? null,
             "mapEntrypoint" => $init["mapEntrypoint"] ?? null,
             "previEntrypoint" => $init["previEntrypoint"] ?? null,
+
+            "cacheDuration" => $cacheDuration ?? -1,
 		]);
 
-		$this->actu = new Actu($this->config);
+
+        //If the user didn't specify a duration for the cache (as it is required for Phpfastcache), then it will not be enabled.
+        if(isset($cacheDuration)) $this->cache = new Cache($this->config->cacheDuration);
+
+
+		$this->actu = new Actu($this->config, $this->cache);
 		$this->carte = new Carte($this->config);
-		$this->previsions = new Previsions($this->config);
+		$this->previsions = new Previsions($this->config, $this->cache);
     }
 
     /* ---------------------------------------- Class-specific constants ---------------------------------------- */
@@ -112,8 +129,11 @@ class Freather {
   /* ------------------------- Actu ------------------------- */
 	public function fetchActu(string|float|int $latitude, string|float|int $longitude, array $options=array()): Freather
 	{
+        
+
 		if(!isset($latitude)) throw new FreatherException("Error when preparing query: latitude parameter is required.", 1);
 		if(!isset($longitude)) throw new FreatherException("Error when preparing query: longitude parameter is required.", 1);
+
 
 		$this->actu->fetchActu(
             //rounding at 8 decimals for world-wide coordinates

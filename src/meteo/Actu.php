@@ -3,6 +3,7 @@
 namespace Viartfelix\Freather\meteo;
 
 use Viartfelix\Freather\common\BaseService;
+use Viartfelix\Freather\config\Cache;
 use Viartfelix\Freather\Config\Config;
 
 use Viartfelix\Freather\Exceptions\FreatherException;
@@ -12,9 +13,9 @@ class Actu extends BaseService {
 	private float $latitude;
 	private array $options;
 
-	function __construct(Config &$config)
+	function __construct(Config &$config, Cache &$cache)
 	{
-		parent::__construct($config);
+		parent::__construct($config, $cache);
 	}
 
 	public function fetchActu(float $lat, float $long, array $options): void
@@ -22,9 +23,10 @@ class Actu extends BaseService {
 		$this->setLat($lat);
 		$this->setLon($long);
 		$this->setOptions($options);
+        
 
 		$this->prepare();
-		$this->exec();
+		$this->exec();        
 	}
 
 	private function prepare(): void
@@ -32,6 +34,7 @@ class Actu extends BaseService {
 
 	private function exec(): void
 	{
+        
 		$options = $this->getOptions();
 		$options["latitude"] = $this->getLat();
 		$options["longitude"] = $this->getLon();
@@ -40,9 +43,10 @@ class Actu extends BaseService {
 
 		$err = $this->fetchAndParse(BaseService::ACTU, $options);
 
-		if(isset($err->errCode)) {
-			throw new FreatherException("Error when fetching or parsing response from server. Logs are likely present on top of this error.", $err->errCode);
-		}
+        if(isset($err) && isset($err->errCode))
+        {
+            throw new FreatherException("Error when fetching or parsing response from server. Logs are likely present on top of this error.", $err->errCode);
+        }
 	}
 
 	public function returnResults(bool $raw = false): mixed

@@ -4,18 +4,24 @@ namespace Viartfelix\Freather\common;
 
 use Symfony\Component\HttpClient\HttpClient;
 
-use Viartfelix\Freather\interfaces\Adresses;
-use Viartfelix\Freather\interfaces\API;
+use Viartfelix\Freather\interfaces\{
+    Adresses,
+    API,
+    CacheInterface,
+};
 
 use Viartfelix\Freather\Config\Config;
+use Viartfelix\Freather\config\Cache;
 
 use Viartfelix\Freather\Exceptions\FreatherException;
 
 use stdClass;
 use Exception;
 
-class BaseService implements API, Adresses {
+class BaseService implements API, Adresses, CacheInterface {
     private Config $config;
+    private Cache $cache;
+
     private $response;
     private $returnedRaw;
     private $returnedRep;
@@ -27,31 +33,86 @@ class BaseService implements API, Adresses {
     const ACTU = 1;
     const PREVISIONS = 2;
 
-    function __construct(Config &$config)
+    private array $UrlDict = array(
+        "|" => "/",
+        "*" => "\\",
+        "$" => ":",
+    );
+
+    private string $finalUrl;
+    private bool $isCached = false;
+    private string $hashedUrl;
+
+    /* ------------------------------------ Functions native to baseService ------------------------------------ */
+
+    function __construct(Config &$config, Cache &$cache)
     {
         $this->config = $config;
+        $this->cache = $cache;
     }
 
     public function fetchAndParse(int $service, array $options): stdClass
     {
         $toReturn = new stdClass();
         
-        try {
-            $this->mode = $this->parseMode($options["mode"] ?? "json");
+        $this->mode = $this->parseMode($options["mode"] ?? "json");
 
-            $this->prepareFetch($options);
+        $this->prepareFetch($options);
+
+        //If the element is not present in the cache.
+        if(!$this->checkCache($service)) {
+            //Fetch the data
             $this->fetch($service);
-            $this->parseResponse();
+            //Set the raw response to the cache
+            $this->setItem($this->hashedUrl, $this->returnedRaw);
 
-        } catch(FreatherException $e) {
-            $toReturn->code = 500;
-            $toReturn->errCode = 2;
-            $toReturn->msg = $e->getMessage();
-            $toReturn->err = $e;
+            $this->isCached = false;
+        } else {
+            //Get the stored item
+            $this->returnedRaw = $this->getItem($this->hashedUrl);
 
-        } finally {
-            return $toReturn;
+            $this->isCached = true;
         }
+
+        $this->parseResponse();
+        
+        return $toReturn;
+    }
+
+    /**
+     * checkCache
+     * 'Compiles' the URL for checking the chache later-on
+     */
+    public function checkCache(int $service): bool
+    {
+        $finalUrl="";
+
+        switch ($service) {
+            //ACTU service
+            case 1:
+                $finalUrl = $this->config->getActuEntrypoint();
+                break;
+
+            //PREVI service
+            case 2:
+                $finalUrl = $this->config->getPreviEntrypoint();
+                break;
+        }
+
+        $finalUrl .= "?";
+
+        $indexOption = 0;
+        foreach ($this->getGlobalOptions() as $key => $value) {
+            //If next item is the second from the array
+            $finalUrl .= (++$indexOption == 1 ? "" : "&");
+            $finalUrl .= $key . "=" . $value;
+        }
+
+        $this->hashedUrl = $this->encodeUrl($finalUrl);
+
+        $this->finalUrl = $finalUrl;
+
+        return $this->checkItem($this->hashedUrl);
     }
 
     /**
@@ -77,56 +138,11 @@ class BaseService implements API, Adresses {
         $this->setOption("lon", $options["longitude"]);
     }
 
-    public function fetch(int $service): void
-    {
-
-        //try {
-            $client = HttpClient::create();
-
-            $apiEntrypoint="";
-
-            switch ($service) {
-                //ACTU service
-                case 1:
-                    $apiEntrypoint = $this->config->getActuEntrypoint();                    
-                    break;
-
-                //PREVI service
-                case 2:
-                    $apiEntrypoint = $this->config->getPreviEntrypoint();
-                    break;
-                
-                //No idea what to put here, so here is a dog ˁ˚ᴥ˚ˀ
-                default:
-                    throw new FreatherException("Error when setting up the fetch Service unknown", 1);
-            }
-
-
-            $this->response = $client->request(
-                //Method
-                "GET",
-                //API entrypoint, specified in the switch above
-                $apiEntrypoint,
-                [
-                    //verify peer to avoid error
-                    "verify_peer" => false,
-                    //$_GET options, speified in prepareFetch
-                    "query" => $this->getGlobalOptions(),
-                ],
-            );
-            
-
-            $this->returnedRaw = $this->response->getContent();
-
-        //} catch(FreatherException $e) {
-        //}
-    }
-
     private function parseResponse(): void
     {
         $finalData = new stdClass();
 
-        try {
+        //try {
           switch (strtolower($this->mode)) {
             case 'json':
               $data = json_decode($this->returnedRaw, true, 512) or throw new FreatherException("Could not parse JSON reponse.", 1);
@@ -154,19 +170,27 @@ class BaseService implements API, Adresses {
             default:
               throw new FreatherException("Error when trying to parse response: the mode '$this->mode' is not supported. Please use 'xml' or 'json' modes.", 1);
           }
-        } catch(FreatherException $e) {
-            $finalData->code = 2;
-            $finalData->msg = $e->getMessage();
-            $finalData->err = $e;
+
+          $finalData->FreatherInfos = new stdClass();
+          $finalData->FreatherInfos->isCached = $this->isCached;
+          $finalData->FreatherInfos->queryUrl = $this->finalUrl;
+          $finalData->FreatherInfos->responseMode = $this->mode;
+          $finalData->FreatherInfos->options = $this->getGlobalOptions();
+          $finalData->FreatherInfos->UrlHash = $this->hashedUrl;
+
+        //} catch(FreatherException $e) {
+        //    $finalData->code = 2;
+        //    $finalData->msg = $e->getMessage();
+        //    $finalData->err = $e;
+
+        //} catch (Exception $e) {
+        //    $finalData->code = 1;
+        //    $finalData->msg = $e->getMessage();
+        //    $finalData->err = $e;
     
-        } catch (Exception $e) {
-            $finalData->code = 1;
-            $finalData->msg = $e->getMessage();
-            $finalData->err = $e;
-    
-        } finally {
+        //} finally {
             $this->returnedRep = $finalData;
-        }
+        //}
     }
 
     public function parseMode(string $mode=null): string
@@ -174,19 +198,65 @@ class BaseService implements API, Adresses {
         $allowedMethods = array (
             "json",
             "xml"
-          );
-      
-          $modeRaw = strtolower($mode ?? "json");
-          $searchMethod = array_search($modeRaw,$allowedMethods);
-      
-          //Fallbacking in json mode if the mode is unknown from authorised methods
-          return ($searchMethod !== false ? $allowedMethods[array_search($modeRaw,$allowedMethods)] : $allowedMethods[0] ?? "json");
+        );
+        
+        $modeRaw = strtolower($mode ?? "json");
+        $searchMethod = array_search($modeRaw,$allowedMethods);
+    
+        //Fallbacking in json mode if the mode is unknown from authorised methods
+        return ($searchMethod !== false ? $allowedMethods[array_search($modeRaw,$allowedMethods)] : $allowedMethods[0] ?? "json");
+    }
+
+    /* ------------------------------------ Interfaces ------------------------------------ */
+
+    /* ------------ API Interface ------------ */
+
+    public function fetch(int $service): void
+    {
+        $client = HttpClient::create();
+
+        $apiEntrypoint="";
+
+        switch ($service) {
+            //ACTU service
+            case 1:
+                $apiEntrypoint = $this->config->getActuEntrypoint();
+                break;
+
+            //PREVI service
+            case 2:
+                $apiEntrypoint = $this->config->getPreviEntrypoint();
+                break;
+            
+            //No idea what to put here, so here is a dog ˁ˚ᴥ˚ˀ
+            default:
+                throw new FreatherException("Error when setting up the fetch Service unknown", 1);
+        }
+
+
+        $this->response = $client->request(
+            //Method
+            "GET",
+            //API entrypoint, specified in the switch above
+            $apiEntrypoint,
+            [
+                //verify peer to avoid error
+                "verify_peer" => false,
+                //$_GET options, speified in prepareFetch
+                "query" => $this->getGlobalOptions(),
+            ],
+        );
+        
+
+        $this->returnedRaw = $this->response->getContent();
     }
 
     public function getRes(bool $raw = false): mixed
     {
         return ($raw ? $this->returnedRaw : $this->returnedRep);
     }
+
+    /* ------------ Adresses Interface ------------ */
 
     /**
      * Vas stocker les infos des adresses.
@@ -203,6 +273,37 @@ class BaseService implements API, Adresses {
     {
 
     }
+
+    /* ------------ Cache Interface ------------ */
+
+    public function checkItem(string $key): bool
+    {
+        return $this->cache->getInstance()->has($key);
+    }
+
+    public function setItem(string $key, mixed $value): void
+    {
+        $this->cache->getInstance()->set($key, $value, $this->config->getCacheDuration());
+    }
+
+    public function getItem(string $key): mixed
+    {
+        return $this->cache->getInstance()->get($key);
+    }
+
+    /**
+     * encoreUrl
+     * Allowed 'encoding' of URL because PHPfastcache doesn't support those special charaters used in the URL: /, \ and :
+     * @param string $url
+     * @return string
+     */
+    public function encodeUrl(string $url): string
+    {
+        return md5($url);
+    }
+
+
+    /* ------------------------------------ Getters and setters ------------------------------------ */
 
     public function getGlobalOptions(): array
     {
