@@ -14,7 +14,7 @@ class Cache {
 
     private Psr16Adapter $Instance;
 
-    function __construct(int &$cacheDuration)
+    function __construct(int &$cacheDuration=null)
     {
         $this->setCacheDuration($cacheDuration ?? -1);
         $this->setInstance(new Psr16Adapter('Files'));
@@ -38,6 +38,21 @@ class Cache {
     public function setInstance(Psr16Adapter $instance): void
     {
         $this->Instance = $instance;
+    }
+
+    public function checkItem(string $key): bool
+    {
+        return $this->getInstance()->has($key);
+    }
+
+    public function setItem(string $key, mixed $value): void
+    {
+        $this->getInstance()->set($key, $value, $this->getCacheDuration());
+    }
+
+    public function getItem(string $key): mixed
+    {
+        return $this->getInstance()->get($key);
     }
 }
 

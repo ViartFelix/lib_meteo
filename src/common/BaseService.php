@@ -33,12 +33,6 @@ class BaseService implements API, Adresses, CacheInterface {
     const ACTU = 1;
     const PREVISIONS = 2;
 
-    private array $UrlDict = array(
-        "|" => "/",
-        "*" => "\\",
-        "$" => ":",
-    );
-
     private string $finalUrl;
     private bool $isCached = false;
     private string $hashedUrl;
@@ -64,12 +58,12 @@ class BaseService implements API, Adresses, CacheInterface {
             //Fetch the data
             $this->fetch($service);
             //Set the raw response to the cache
-            $this->setItem($this->hashedUrl, $this->returnedRaw);
+            $this->cache->setItem($this->hashedUrl, $this->returnedRaw);
 
             $this->isCached = false;
         } else {
             //Get the stored item
-            $this->returnedRaw = $this->getItem($this->hashedUrl);
+            $this->returnedRaw = $this->cache->getItem($this->hashedUrl);
 
             $this->isCached = true;
         }
@@ -77,6 +71,29 @@ class BaseService implements API, Adresses, CacheInterface {
         $this->parseResponse();
         
         return $toReturn;
+    }
+
+    /**
+     * prepareFetch
+     * @param array $options The options called in either Previ or Actu
+     * @return void
+     */
+    public function prepareFetch(array $options): void
+    {
+        /**
+         * Common options, defined in config
+         */
+        $this->setOption("appid", $this->config->getApiKey());
+        $this->setOption("lang", $this->config->getLang());
+        $this->setOption("units", $this->config->getUnit());
+        $this->setOption("cnt", $this->config->getTimestamps());
+
+        /**
+         * Other common options (lat, long, mode)
+         */
+        $this->setOption("mode", $this->mode);
+        $this->setOption("lat", $options["latitude"]);
+        $this->setOption("lon", $options["longitude"]);
     }
 
     /**
@@ -112,30 +129,7 @@ class BaseService implements API, Adresses, CacheInterface {
 
         $this->finalUrl = $finalUrl;
 
-        return $this->checkItem($this->hashedUrl);
-    }
-
-    /**
-     * prepareFetch
-     * @param array $options The options called in either Previ or Actu
-     * @return void
-     */
-    public function prepareFetch(array $options): void
-    {
-        /**
-         * Common options, defined in config
-         */
-        $this->setOption("appid", $this->config->getApiKey());
-        $this->setOption("lang", $this->config->getLang());
-        $this->setOption("units", $this->config->getUnit());
-        $this->setOption("cnt", $this->config->getTimestamps());
-
-        /**
-         * Other common options (lat, long, mode)
-         */
-        $this->setOption("mode", $this->mode);
-        $this->setOption("lat", $options["latitude"]);
-        $this->setOption("lon", $options["longitude"]);
+        return $this->cache->checkItem($this->hashedUrl);
     }
 
     private function parseResponse(): void
@@ -275,21 +269,6 @@ class BaseService implements API, Adresses, CacheInterface {
     }
 
     /* ------------ Cache Interface ------------ */
-
-    public function checkItem(string $key): bool
-    {
-        return $this->cache->getInstance()->has($key);
-    }
-
-    public function setItem(string $key, mixed $value): void
-    {
-        $this->cache->getInstance()->set($key, $value, $this->config->getCacheDuration());
-    }
-
-    public function getItem(string $key): mixed
-    {
-        return $this->cache->getInstance()->get($key);
-    }
 
     /**
      * encoreUrl

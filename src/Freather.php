@@ -17,6 +17,8 @@ use Viartfelix\Freather\meteo\{
 
 //TODO: debug function (like toString): which is a ton of var_dumps echoed.
 //TODO: fetchGet(Service): fetch and get at the same time.
+//TODO: Pour les adresses, faire une class type 'Adresse', avec des léthodes statiques. Dans les fonctions, donner dans les types possibles
+//la classe adresse, et check si le param est une instance de Adresse. Si oui, alors passer en mode 'adresse' dans le base service.
 
 class Freather {
 	private Config $config;
@@ -26,8 +28,9 @@ class Freather {
 	private Previsions $previsions;
 
 	function __construct(
+        string $apiKey,
+
 		array $init=array(
-			"apiKey"=>null,
 			"lang"=>"en",
 			"measurement"=>"standard",
 			"timestamps"=>1,
@@ -40,7 +43,7 @@ class Freather {
         int $cacheDuration = -1,
 	) {
 		$this->config=new Config ([
-			"apiKey"=>$init["apiKey"] ?? null,
+			"apiKey"=>$apiKey,
 			"lang"=>$init["lang"] ?? null,
 			"measurement"=>$init["measurement"] ?? null,
 			"timestamps"=>$init["timestamps"] ?? null,
@@ -129,7 +132,6 @@ class Freather {
   /* ------------------------- Actu ------------------------- */
 	public function fetchActu(string|float|int $latitude, string|float|int $longitude, array $options=array()): Freather
 	{
-        
 
 		if(!isset($latitude)) throw new FreatherException("Error when preparing query: latitude parameter is required.", 1);
 		if(!isset($longitude)) throw new FreatherException("Error when preparing query: longitude parameter is required.", 1);
@@ -163,6 +165,9 @@ class Freather {
      * 
      * @throws FreatherException
      */
+    
+    //TODO: Instance de FreatherAdresse dans les params.
+
 	public function fetchMap(string|float|int $zoom, string|float|int $x, string|float|int $y, mixed $op, array $options=array()): Freather
 	{
 
