@@ -9,24 +9,20 @@ use Viartfelix\Freather\Config\Config;
 use Viartfelix\Freather\Exceptions\FreatherException;
 
 class Actu extends BaseService {
-	private float $longitude;
-	private float $latitude;
+
+    private float|Adresses $p1;
+    private float|null $p2;
+
 	private array $options;
 
 	function __construct(Config &$config, Cache &$cache)
 	{
-		parent::__construct($config, $cache);
+		//parent::__construct($config, $cache);
 	}
 
-	public function fetchActu(float $lat, float $long, array $options): void
+	public function fetchActu(float|Adresses $p1, float|null $p2 = null, array $options = array()): void
 	{
-		$this->setLat($lat);
-		$this->setLon($long);
-		$this->setOptions($options);
         
-
-		$this->prepare();
-		$this->exec();        
 	}
 
 	private function prepare(): void
@@ -34,7 +30,7 @@ class Actu extends BaseService {
 
 	private function exec(): void
 	{
-        
+        /*
 		$options = $this->getOptions();
 		$options["latitude"] = $this->getLat();
 		$options["longitude"] = $this->getLon();
@@ -47,8 +43,10 @@ class Actu extends BaseService {
         {
             throw new FreatherException("Error when fetching or parsing response from server. Logs are likely present on top of this error.", $err->errCode);
         }
+        */
 	}
 
+    /*
 	public function returnResults(bool $raw = false): mixed
 	{
 		return ($this->getRes($raw));
@@ -73,6 +71,8 @@ class Actu extends BaseService {
 	{
 		$this->longitude = $long;
 	}
+    */
+
 
 	public function setOptions(array $options): void
 	{

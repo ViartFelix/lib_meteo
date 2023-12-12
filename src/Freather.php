@@ -13,12 +13,18 @@ use Viartfelix\Freather\meteo\{
   Actu,
   Previsions,
   Carte,
+  Adresses,
 };
 
 //TODO: debug function (like toString): which is a ton of var_dumps echoed.
 //TODO: fetchGet(Service): fetch and get at the same time.
 //TODO: Pour les adresses, faire une class type 'Adresse', avec des léthodes statiques. Dans les fonctions, donner dans les types possibles
 //la classe adresse, et check si le param est une instance de Adresse. Si oui, alors passer en mode 'adresse' dans le base service.
+
+//TODO: le pre-controller (check des paramètres et de leurs logiques) = interface ici.
+//TODO: le vrai controller (celui qui check et attribue les paramètres pour le Base service) = les classes services
+//TODO: le base service = juste interface API et fonction qui permettent de fetch / get.
+
 
 class Freather {
 	private Config $config;
@@ -130,27 +136,69 @@ class Freather {
 	}
 
   /* ------------------------- Actu ------------------------- */
-	public function fetchActu(string|float|int $latitude, string|float|int $longitude, array $options=array()): Freather
+	public function fetchActu(string|float|int|Adresses $p1, string|float|int|null $p2 = null, array $options=array()): Freather
 	{
+        /**
+         * Possibility 1
+         * p1 is Adresses AND options is an array (options) (and p2 is null)
+         * 
+         * Possibility 2
+         * p1 and p2 is string, float or int
+         */
 
-		if(!isset($latitude)) throw new FreatherException("Error when preparing query: latitude parameter is required.", 1);
-		if(!isset($longitude)) throw new FreatherException("Error when preparing query: longitude parameter is required.", 1);
+        $authorisedTypes = array("string","float","int","double");
 
+        if(!isset($p1)) throw new FreatherException("Error when preparing query: Adresses or latitude parameter (p1) is required.", 1);
 
-		$this->actu->fetchActu(
-            //rounding at 8 decimals for world-wide coordinates
-			round(floatval($latitude), 8),
-			round(floatval($longitude), 8),
-			$options,
-		);
+        //if p1 is an adress
+        if($p1 instanceof Adresses)
+        {
+            $this->actu->fetchActu(
+                //We pass adresses to the first parameter
+                $p1,
+                //We don't need longitude to be passed
+                null,
+                //And we pass the options to the "controller" of Freather.
+                $options ?? array(),
+            );
+        }
+        //If the first parametter is not an adress, then that means the latitude / longitude system is used. 
+        else {
+            //We need the 2 parametters (lat and long)
+            if(!isset($p1)) throw new FreatherException("Error when preparing query: latitude parameter (p1) is required.", 1);
+		    if(!isset($p2)) throw new FreatherException("Error when preparing query: longitude parameter (p2) is required.", 1);
+
+            //If the 2 parameters are of authorised types, then that mean we have a longitude and latitude !
+            if(in_array(gettype($p1),$authorisedTypes,false) && in_array(gettype($p2),$authorisedTypes,false))
+            {
+                //float value of latitude
+                $floatLat = round((float)$p1,7);
+
+                //float value of longitude
+                $floatLon = round((float)$p2,7);
+
+                //then we can pass to the "controller" of Freather.
+                $this->actu->fetchActu(
+                    $floatLat,
+                    $floatLon,
+                    $options ?? array()
+                );
+
+            } else {
+                if(!in_array(gettype($p1),$authorisedTypes,false)) throw new FreatherException("Error when preparing query: latitude parameter (p1) is not of any acceptable types: string, int or float.", 1);
+                if(!in_array(gettype($p1),$authorisedTypes,false)) throw new FreatherException("Error when preparing query: latitude parameter (p2) is not of any acceptable types: string, int or float.", 1);
+            }
+        }
 
 		return $this;
     }
 
+    /*
 	public function getActu(bool $raw = false): mixed
 	{
 		return $this->actu->returnResults($raw);
 	}
+    */
 
 	/* ------------------------- Carte ------------------------- */
     /**

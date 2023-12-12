@@ -96,6 +96,11 @@ class BaseService implements API, Adresses, CacheInterface {
         $this->setOption("lon", $options["longitude"]);
     }
 
+    public function prepareAdresses(Adresses $adresses): void
+    {
+
+    }
+
     /**
      * checkCache
      * 'Compiles' the URL for checking the chache later-on

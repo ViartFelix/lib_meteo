@@ -2,34 +2,62 @@
 
 namespace Viartfelix\Freather\meteo;
 
-abstract class Adresses
+class Adresses
 {
-    function city(string $city): string
+
+    private ?string $city;
+    private ?string $countryCode;
+    private ?string $stateCode;
+    private ?string $cityID;
+    private ?string $zipCode;
+
+    public function __construct(string $city=null, string $countryCode=null, string $stateCode=null, string $cityID=null, string $zipCode=null)
     {
-        return $city;
+        $this->city = $city ?? null;
+        $this->countryCode = $countryCode ?? null;
+        $this->stateCode = $stateCode ?? null;
+        $this->cityID = $cityID ?? null;
+        $this->zipCode = $zipCode ?? null;
     }
 
-    function countryCode(string $code): string
+    public function city(string $city): Adresses
     {
-        return $code;
+        $this->city = $city;
+        return $this;
     }
 
-    function stateCode(string $code): string
+    public function countryCode(string $code): Adresses
     {
-        return $code;
+        $this->countryCode = $code;
+        return $this;
     }
 
-    function cityID(string $cityID): string
+    public function stateCode(string $code): Adresses
     {
-        return "";
+        $this->stateCode = $code;
+        return $this;
     }
 
-    function all(string $city, string $countryCode, string $stateCode)
+    public function cityID(string $cityID): Adresses
+    {
+        $this->cityID = $cityID;
+        return $this;
+    }
+
+    public function zipCode(string $zipCode): Adresses
+    {
+        $this->zipCode = $zipCode;
+        return $this;
+    }
+
+    public function toArray(): array
     {
         return array(
-            "city" => $city,
-            "c_code" => $countryCode,
-            "s_code" => $stateCode,
+            "city" => $this->city ?? null,
+            "countryCode" => $this->countryCode ?? null,
+            "stateCode" => $this->stateCode ?? null,
+            "cityID" => $this->cityID ?? null,
+            "zipCode" => $this->zipCode ?? null,
         );
     }
 }
