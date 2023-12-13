@@ -11,6 +11,9 @@ class Adresses
     private ?string $cityID;
     private ?string $zipCode;
 
+    /**
+     * Beware, stateCode is only avaliable to the US
+     */
     public function __construct(string $city=null, string $countryCode=null, string $stateCode=null, string $cityID=null, string $zipCode=null)
     {
         $this->city = $city ?? null;
@@ -32,6 +35,9 @@ class Adresses
         return $this;
     }
 
+    /**
+     * Beware, stateCode is only avaliable to the US
+     */
     public function stateCode(string $code): Adresses
     {
         $this->stateCode = $code;
@@ -48,6 +54,13 @@ class Adresses
     {
         $this->zipCode = $zipCode;
         return $this;
+    }
+
+    public function mode1(string $city, string $countryCode=null, string $stateCcode=null)
+    {
+        $this->city = $city;
+        $this->countryCode = $countryCode ?? null;
+        $this->stateCode = $stateCcode ?? null;
     }
 
     public function toArray(): array

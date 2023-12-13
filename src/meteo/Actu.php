@@ -5,7 +5,6 @@ namespace Viartfelix\Freather\meteo;
 use stdClass;
 use Viartfelix\Freather\common\LatlongService as CoordsService;
 use Viartfelix\Freather\common\AdressesService as AdressesService;
-//use Viartfelix\Freather\common\BaseService as BaseService;
 use Viartfelix\Freather\common\Baser as Baser;
 
 use Viartfelix\Freather\config\Cache;
@@ -38,10 +37,16 @@ class Actu extends Baser
 
 	public function fetchActu(float|Adresses $p1, float|null $p2 = null, array $options = array()): void
 	{
+        $finalGet = "";
+
         //If the adresses system is used
         if($p1 instanceof Adresses)
         {
-            
+            //We parse the adresses
+            $parsedAdresse = $this->parseAdresses($p1);
+
+            //Compiling all the params
+            $finalGet = $this->compileAdresses($parsedAdresse, $this->config);
         }
         //If p1 is type of floating, then the lat-lon system is used.
         else
@@ -55,57 +60,58 @@ class Actu extends Baser
                     "lon" => $p2,
                     $options,
                 ],$this->config);
-
-                //parsing the response mode (for security sakes)
-                $finalGet["mode"] = $this->parseMode($options["mode"] ?? null);
-
-                //compile URL for the cache
-                $finalUrl = $this->compileUrl(Baser::ACTU, $finalGet);
-
-                $response = new stdClass();
-
-                //Note: I convert the url into md5 because PHPfastcache doesn't support the following characters {}()/\@:
-                $cacheKey = md5($finalUrl);
-
-                $isCached = true;
-
-                //If the item is not in the cache
-                if(!$this->checkItem($cacheKey))
-                {
-                    //Then we fetch it to openweathermap
-                    $this->rawResponse = $this->fetch(Baser::ACTU, $finalGet);
-                    //We tell that the reponse is not cached
-                    $isCached = false;
-                    //And we put the item in the cache
-                    $this->setItem($cacheKey,$this->rawResponse);
-                }
-                //If there is this item in the cache
-                else {
-                    //We get the item from the cache
-                    $this->rawResponse = $this->getItem($cacheKey);
-                    $isCached = true;
-                }
-
-                $response = $this->parseResponse($this->rawResponse, $finalGet["mode"]);
-
-                /**
-                 * Last added data (Freather infos)
-                 */
-                $response->FreatherInfos = new stdClass();
-                //if the object is cached
-                $response->FreatherInfos->isCached = $isCached;
-                //response mode
-                $response->FreatherInfos->mode = $finalGet["mode"];
-                //finalUrl
-                $response->FreatherInfos->finalUrl = $finalUrl;
-                //all the options in the query
-                $response->FreatherInfos->options = $finalGet;
-
-                //and we attribute the final response, alongside Freather's data to the response
-                $this->response = $response;                
             }
-            
         }
+        
+        //parsing the response mode (for security sakes)
+        $finalGet["mode"] = $this->parseMode($options["mode"] ?? null);
+
+        //compile URL for the cache
+        $finalUrl = $this->compileUrl(Baser::PREVISIONS, $finalGet);
+
+        //setting up the object for the response
+        $response = new stdClass();
+
+        //Note: I convert the url into md5 because PHPfastcache doesn't support the following characters {}()/\@:
+        $cacheKey = md5($finalUrl);
+
+        //is gonna be used to tell if the pbject has been cached.
+        $isCached = true;
+
+        //If the item is not in the cache
+        if(!$this->checkItem($cacheKey))
+        {
+            //Then we fetch it to openweathermap
+            $this->rawResponse = $this->fetch(Baser::PREVISIONS, $finalGet);
+            //We tell that the reponse is not cached
+            $isCached = false;
+            //And we put the item in the cache
+            $this->setItem($cacheKey,$this->rawResponse);
+        }
+        //If there is this item in the cache
+        else {
+            //We get the item from the cache
+            $this->rawResponse = $this->getItem($cacheKey);
+            $isCached = true;
+        }
+
+        $response = $this->parseResponse($this->rawResponse, $finalGet["mode"]);
+
+        /**
+         * Last added data (Freather infos)
+         */
+        $response->FreatherInfos = new stdClass();
+        //if the object is cached
+        $response->FreatherInfos->isCached = $isCached;
+        //response mode
+        $response->FreatherInfos->mode = $finalGet["mode"];
+        //finalUrl
+        $response->FreatherInfos->finalUrl = $finalUrl;
+        //all the options in the query
+        $response->FreatherInfos->options = $finalGet;
+
+        //and we attribute the final response, alongside Freather's data to the response
+        $this->response = $response;   
 	}
 
     public function returnRes(bool $isRaw = false)
