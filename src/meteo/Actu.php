@@ -2,6 +2,7 @@
 
 namespace Viartfelix\Freather\meteo;
 
+use stdClass;
 use Viartfelix\Freather\common\LatlongService as CoordsService;
 use Viartfelix\Freather\common\AdressesService as AdressesService;
 //use Viartfelix\Freather\common\BaseService as BaseService;
@@ -25,8 +26,12 @@ class Actu extends Baser
 
 	private array $options;
 
+    private string $rawResponse;
+    private stdClass $response;
+
 	function __construct(Config &$config, Cache &$cache)
 	{
+        parent::__construct($config, $cache);
         $this->config = &$config;
         $this->cache = &$cache;
 	}
@@ -44,35 +49,79 @@ class Actu extends Baser
             //If latitude or longitude is inside the authorised range
             if($this->isInRange($p1, $p2))
             {
-                
+                //Compiling of the params, for the fetch
+                $finalGet = $this->compileOptions([
+                    "lat" => $p1,
+                    "lon" => $p2,
+                    $options,
+                ],$this->config);
+
+                //parsing the response mode (for security sakes)
+                $finalGet["mode"] = $this->parseMode($options["mode"] ?? null);
+
+                //compile URL for the cache
+                $finalUrl = $this->compileUrl(Baser::ACTU, $finalGet);
+
+                $response = new stdClass();
+
+                //Note: I convert the url into md5 because PHPfastcache doesn't support the following characters {}()/\@:
+                $cacheKey = md5($finalUrl);
+
+                $isCached = true;
+
+                //If the item is not in the cache
+                if(!$this->checkItem($cacheKey))
+                {
+                    //Then we fetch it to openweathermap
+                    $this->rawResponse = $this->fetch(Baser::ACTU, $finalGet);
+                    //We tell that the reponse is not cached
+                    $isCached = false;
+                    //And we put the item in the cache
+                    $this->setItem($cacheKey,$this->rawResponse);
+                }
+                //If there is this item in the cache
+                else {
+                    //We get the item from the cache
+                    $this->rawResponse = $this->getItem($cacheKey);
+                    $isCached = true;
+                }
+
+                $response = $this->parseResponse($this->rawResponse, $finalGet["mode"]);
+
+                /**
+                 * Last added data (Freather infos)
+                 */
+                $response->FreatherInfos = new stdClass();
+                //if the object is cached
+                $response->FreatherInfos->isCached = $isCached;
+                //response mode
+                $response->FreatherInfos->mode = $finalGet["mode"];
+                //finalUrl
+                $response->FreatherInfos->finalUrl = $finalUrl;
+                //all the options in the query
+                $response->FreatherInfos->options = $finalGet;
+
+                //and we attribute the final response, alongside Freather's data to the response
+                $this->response = $response;                
             }
             
         }
-
-
-    
 	}
 
-	private function prepare(): void
-	{}
+    public function returnRes(bool $isRaw = false)
+    {
+        return ($isRaw ? $this->getRaw() : $this->getResponse());
+    }
 
-	private function exec(): void
-	{
-        /*
-		$options = $this->getOptions();
-		$options["latitude"] = $this->getLat();
-		$options["longitude"] = $this->getLon();
+    public function getResponse()
+    {
+        return $this->response;
+    }
 
-		$this->parseMode($options["mode"] ?? "json");
-
-		$err = $this->fetchAndParse(BaseService::ACTU, $options);
-
-        if(isset($err) && isset($err->errCode))
-        {
-            throw new FreatherException("Error when fetching or parsing response from server. Logs are likely present on top of this error.", $err->errCode);
-        }
-        */
-	}
+    public function getRaw(): string
+    {
+        return $this->rawResponse;
+    }
 
     public function getP1(): float|Adresses
     {
@@ -94,34 +143,6 @@ class Actu extends Baser
         $this->p2 = $p2;
     }
 
-
-
-    /*
-	public function returnResults(bool $raw = false): mixed
-	{
-		return ($this->getRes($raw));
-	}
-
-	public function getLat(): float
-	{
-		return $this->latitude;
-	}
-
-	public function setLat(float $lat): void
-	{
-		$this->latitude = $lat;
-	}
-
-	public function getLon(): float
-	{
-		return $this->longitude;
-	}
-
-	public function setLon(float $long): void
-	{
-		$this->longitude = $long;
-	}
-    */
     public function addOption(string $key, mixed $value): void
     {
         $this->options[$key] = $value;

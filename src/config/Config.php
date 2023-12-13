@@ -40,7 +40,6 @@ class Config {
         "previEntrypoint"=>null,
 
         "cacheDuration"=>-1,
-        "cacheDir"=>null,
     ]) {
         $this->defineConfig($config);
     }
@@ -56,7 +55,6 @@ class Config {
         "previEntrypoint"=>null,
 
         "cacheDuration"=>-1,
-        "cacheDir"=>null,
     )) {
 
         if(isset($this->currConfig))

@@ -194,12 +194,10 @@ class Freather {
 		return $this;
     }
 
-    /*
 	public function getActu(bool $raw = false): mixed
 	{
-		return $this->actu->returnResults($raw);
+		return $this->actu->returnRes($raw);
 	}
-    */
 
 	/* ------------------------- Carte ------------------------- */
     /**

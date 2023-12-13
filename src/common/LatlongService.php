@@ -18,6 +18,27 @@ trait LatlongService
 
         return true;
     }
+
+    /**
+     * compileOptions
+     * compileOptions will try to chery-pick options and give them back, to prevent unnecessary options.
+     */
+    public function compileOptions(array $options, Config $config): array
+    {
+        $finalArray = array();
+
+        //Latitude and logitude
+        $finalArray["lat"] = $options["lat"];
+        $finalArray["lon"] = $options["lon"];
+
+        //Common options
+        $finalArray["appid"] = $config->getApiKey();
+        $finalArray["units"] = $config->getUnit() ?? "standard";
+        $finalArray["lang"] = $config->getLang() ?? "en";
+        $finalArray["cnt"] = $config->getTimestamps() ?? 1;
+
+        return $finalArray;
+    }
 }
 
 ?>
