@@ -2,7 +2,6 @@
 
 namespace Viartfelix\Freather\meteo;
 
-use stdClass;
 use Viartfelix\Freather\common\LatlongService as CoordsService;
 use Viartfelix\Freather\common\AdressesService as AdressesService;
 use Viartfelix\Freather\common\Baser as Baser;
@@ -11,6 +10,8 @@ use Viartfelix\Freather\config\Cache;
 use Viartfelix\Freather\Config\Config;
 
 use Viartfelix\Freather\Exceptions\FreatherException;
+
+use stdClass;
 
 class Actu extends Baser
 {
@@ -67,7 +68,7 @@ class Actu extends Baser
         $finalGet["mode"] = $this->parseMode($options["mode"] ?? null);
 
         //compile URL for the cache
-        $finalUrl = $this->compileUrl(Baser::PREVISIONS, $finalGet);
+        $finalUrl = $this->compileUrl(Baser::ACTU, $finalGet);
 
         //setting up the object for the response
         $response = new stdClass();
@@ -82,7 +83,7 @@ class Actu extends Baser
         if(!$this->checkItem($cacheKey))
         {
             //Then we fetch it to openweathermap
-            $this->rawResponse = $this->fetch(Baser::PREVISIONS, $finalGet);
+            $this->rawResponse = $this->fetch(Baser::ACTU, $finalGet);
             //We tell that the reponse is not cached
             $isCached = false;
             //And we put the item in the cache

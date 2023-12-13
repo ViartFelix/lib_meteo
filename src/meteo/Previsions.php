@@ -2,83 +2,170 @@
 
 namespace Viartfelix\Freather\meteo;
 
-use Viartfelix\Freather\common\BaseService;
+use Viartfelix\Freather\common\LatlongService as CoordsService;
+use Viartfelix\Freather\common\AdressesService as AdressesService;
+use Viartfelix\Freather\common\Baser as Baser;
+
 use Viartfelix\Freather\config\Cache;
 use Viartfelix\Freather\Config\Config;
+
 use Viartfelix\Freather\Exceptions\FreatherException;
 
-class Previsions extends BaseService {
-    private float $longitude;
-    private float $latitude;
-    private array $options = array();
-  
+use stdClass;
+
+class Previsions extends Baser
+{
+
+    //using Helper's trait methods
+    use AdressesService, CoordsService;
+
+    private Config $config;
+    private Cache $cache;
+
+    private float|Adresses $p1;
+    private float|null $p2;
+
+    private array $options;
+
+    private string $rawResponse;
+    private stdClass $response;
+
     function __construct(Config &$config, Cache &$cache)
-    {
+	{
         parent::__construct($config, $cache);
-    }
+        $this->config = &$config;
+        $this->cache = &$cache;
+	}
 
-    public function fetchPrevisions(float $lon, float $lat, array $options=array()): void
-    {
-        $this->setLong($lon);
-        $this->setLat($lat);
-        $this->setOptions($options);
 
-        $this->prepare();
-        $this->exec();
-    }
+    public function fetchPrevisions(float|Adresses $p1, float|null $p2 = null, array $options = array()): void
+	{
+        $finalGet = "";
 
-    private function prepare(): void
-    {}
+        //If the adresses system is used
+        if($p1 instanceof Adresses)
+        {
+            //We parse the adresses
+            $parsedAdresse = $this->parseAdresses($p1);
 
-    private function exec(): void
-    {
-        $options = $this->getOptions();
-        $options["latitude"] = $this->getLat();
-        $options["longitude"] = $this->getLong();
-
-        $this->parseMode($options["mode"] ?? "json");
-
-        $err = $this->fetchAndParse(BaseService::PREVISIONS, $options);
-
-        if(isset($err->errCode)) {
-            throw new FreatherException("Error when fetching or parsing response from server. Logs are likely present on top of this error.", $err->errCode);
+            //Compiling all the params
+            $finalGet = $this->compileAdresses($parsedAdresse, $this->config);
         }
+        //If p1 is type of floating, then the lat-lon system is used.
+        else
+        {
+            //If latitude or longitude is inside the authorised range
+            if($this->isInRange($p1, $p2))
+            {
+                //Compiling of the params, for the fetch
+                $finalGet = $this->compileOptions([
+                    "lat" => $p1,
+                    "lon" => $p2,
+                    $options,
+                ],$this->config);
+            }
+        }
+        
+        //parsing the response mode (for security sakes)
+        $finalGet["mode"] = $this->parseMode($options["mode"] ?? null);
+
+        //compile URL for the cache
+        $finalUrl = $this->compileUrl(Baser::PREVISIONS, $finalGet);
+
+        //setting up the object for the response
+        $response = new stdClass();
+
+        //Note: I convert the url into md5 because PHPfastcache doesn't support the following characters {}()/\@:
+        $cacheKey = md5($finalUrl);
+
+        //is gonna be used to tell if the pbject has been cached.
+        $isCached = true;
+
+        //If the item is not in the cache
+        if(!$this->checkItem($cacheKey))
+        {
+            //Then we fetch it to openweathermap
+            $this->rawResponse = $this->fetch(Baser::PREVISIONS, $finalGet);
+            //We tell that the reponse is not cached
+            $isCached = false;
+            //And we put the item in the cache
+            $this->setItem($cacheKey,$this->rawResponse);
+        }
+        //If there is this item in the cache
+        else {
+            //We get the item from the cache
+            $this->rawResponse = $this->getItem($cacheKey);
+            $isCached = true;
+        }
+
+        $response = $this->parseResponse($this->rawResponse, $finalGet["mode"]);
+
+        /**
+         * Last added data (Freather infos)
+         */
+        $response->FreatherInfos = new stdClass();
+        //if the object is cached
+        $response->FreatherInfos->isCached = $isCached;
+        //response mode
+        $response->FreatherInfos->mode = $finalGet["mode"];
+        //finalUrl
+        $response->FreatherInfos->finalUrl = $finalUrl;
+        //all the options in the query
+        $response->FreatherInfos->options = $finalGet;
+
+        //and we attribute the final response, alongside Freather's data to the response
+        $this->response = $response;   
+	}
+
+    public function returnRes(bool $isRaw = false)
+    {
+        return ($isRaw ? $this->getRaw() : $this->getResponse());
     }
 
-    public function returnResults(bool $raw): mixed
+    public function getResponse()
     {
-        return ($this->getRes($raw));
+        return $this->response;
     }
 
-    public function setLong(float $long): void
+    public function getRaw(): string
     {
-        $this->longitude = $long;
+        return $this->rawResponse;
     }
 
-    public function getLong(): float
+    public function getP1(): float|Adresses
     {
-        return $this->longitude;
+        return $this->p1;
     }
 
-    public function setLat(float $lat): void
+    public function setP1(float|Adresses $p1): void
     {
-        $this->latitude = $lat;
+        $this->p1 = $p1;
     }
 
-    public function getLat(): float
+    public function getP2(): float|null
     {
-        return $this->latitude;
+        return $this->p2;
     }
 
-    public function setOptions(array $options): void
+    public function setP2(float $p2): void
     {
-        $this->options = $options;
+        $this->p2 = $p2;
     }
 
-    public function getOptions(): array
+    public function addOption(string $key, mixed $value): void
     {
-        return $this->options;
+        $this->options[$key] = $value;
     }
+    
+	public function setOptions(array $options): void
+	{
+		$this->options = $options;
+	}
+
+	public function getOptions(): array
+	{
+		return $this->options;
+	}
 }
 
 ?>
