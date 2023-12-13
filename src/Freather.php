@@ -185,8 +185,9 @@ class Freather {
                 );
 
             } else {
-                if(!in_array(gettype($p1),$authorisedTypes,false)) throw new FreatherException("Error when preparing query: latitude parameter (p1) is not of any acceptable types: string, int or float.", 1);
-                if(!in_array(gettype($p1),$authorisedTypes,false)) throw new FreatherException("Error when preparing query: latitude parameter (p2) is not of any acceptable types: string, int or float.", 1);
+                //If p1 or p2 is not of any authorised type.
+                if(!in_array(gettype($p1),$authorisedTypes,false)) throw new FreatherException("Error when preparing query: latitude parameter (p1) is not of any acceptable types: string, int or float. (Type of p1: ".gettype($p1).")", 1);
+                if(!in_array(gettype($p1),$authorisedTypes,false)) throw new FreatherException("Error when preparing query: latitude parameter (p2) is not of any acceptable types: string, int or float. (Type of p2: ".gettype($p2).")", 1);
             }
         }
 

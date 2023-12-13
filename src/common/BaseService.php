@@ -18,7 +18,7 @@ use Viartfelix\Freather\Exceptions\FreatherException;
 use stdClass;
 use Exception;
 
-class BaseService implements API, Adresses, CacheInterface {
+class BaseService {
     private Config $config;
     private Cache $cache;
 
