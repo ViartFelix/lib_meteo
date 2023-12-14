@@ -1,17 +1,17 @@
 <?php
 
-namespace Viartfelix\Freather\meteo;
+namespace Viartfelix\Freather\weather;
 
 use Viartfelix\Freather\common\BaseService;
 use Viartfelix\Freather\config\Cache;
 use Viartfelix\Freather\Config\Config;
 
-class Carte extends BaseService {
+class Map extends BaseService {
     private Config $config;
     private int $x;
     private int $y;
     private int $zoom;
-    private string $op;
+    private $op;
     private array $options = array();
 
     private string $link;
@@ -121,12 +121,12 @@ class Carte extends BaseService {
         $this->zoom = $zoom;
     }
 
-    public function getOP(): string
+    public function getOP()
     {
         return $this->op;
     }
 
-    public function setOP(string $op): void
+    public function setOP($op): void
     {
         $this->op = $op;
     }

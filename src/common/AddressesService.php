@@ -7,21 +7,23 @@ use Viartfelix\Freather\config\{
     Config,
 };
 
-use Viartfelix\Freather\meteo\Adresses;
+use Viartfelix\Freather\weather\Addresses;
 
 use Viartfelix\Freather\Exceptions\FreatherException;
 
-trait AdressesService
+trait AddressesService
 {
     /**
-     * will parse the adresses info, and guess the mode: country/city mode, citi ID mode and zip code mode
+     * Will parse the addresses info, and guess the mode: country/city mode, citi ID mode and zip code mode
+     * @param Addresses $options The options / addresses
+     * @return array
      */
-    public function parseAdresses(Adresses $options): array
+    public function parseAddresses(Addresses $options): array
     {
         $finalData = array();
         $arrayOptions = $options->toArray();
 
-        //If, in the adresses system, the first mode (city name, country code and/or state code)
+        //If, in the addresses system, the first mode (city name, country code and/or state code)
         if(
             isset($arrayOptions["city"]) ||
             isset($arrayOptions["countryCode"]) ||
@@ -42,17 +44,17 @@ trait AdressesService
         }
         //or else nothing corresponds
         else {
-            throw new FreatherException("All the params in Adresses are empty, please make sure they are values in Adresses.", 1);
+            throw new FreatherException("All the params in Addresses are empty, please make sure they are values in Addresses.", 1);
         }
 
         return $finalData;
     }
 
-    public function compileAdresses(array $adresseParse, Config $config)
+    public function compileAddresses(array $adresseParse, Config $config)
     {
         $finalArray = array();
 
-        //the parsed adresses
+        //the parsed addresses
         if(isset($adresseParse["q"])) $finalArray["q"] = $adresseParse["q"];
         if(isset($adresseParse["id"])) $finalArray["id"] = $adresseParse["id"];
         if(isset($adresseParse["zip"])) $finalArray["zip"] = $adresseParse["zip"];

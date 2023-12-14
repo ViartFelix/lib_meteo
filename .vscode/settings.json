@@ -1,7 +1,7 @@
 {
     //Version of PHP developped in: 8.1.12
     //Allows defining PHP version for vscode.
-    "php.version": "8.1",
+    "php.version": "8.3",
 
     // The number of spaces a tab is equal to. This setting is overridden
     // based on the file contents when `editor.detectIndentation` is true.

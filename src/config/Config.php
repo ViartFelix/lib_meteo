@@ -8,11 +8,11 @@ use Viartfelix\Freather\Exceptions\FreatherException;
 class Config {
     private string $apiKey;
 
-    private string $defaultActuEntrypoint = "https://api.openweathermap.org/data/2.5/weather";
-    private string $actuEntrypoint = "https://api.openweathermap.org/data/2.5/weather";
+    private string $defaultCurrentEntrypoint = "https://api.openweathermap.org/data/2.5/weather";
+    private string $currentEntrypoint = "https://api.openweathermap.org/data/2.5/weather";
 
-    private string $defaultPreviEntrypoint = "https://api.openweathermap.org/data/2.5/forecast";
-    private string $previEntrypoint = "https://api.openweathermap.org/data/2.5/forecast";
+    private string $defaultForecastEntrypoint = "https://api.openweathermap.org/data/2.5/forecast";
+    private string $forecastEntrypoint = "https://api.openweathermap.org/data/2.5/forecast";
 
     private string $defaultMapEntrypoint = "http://maps.openweathermap.org/maps/2.0/weather";
     private string $mapEntrypoint = "http://maps.openweathermap.org/maps/2.0/weather";
@@ -35,9 +35,9 @@ class Config {
         "measurement"=>"standard",
         "timestamps"=>null,
 
-        "actuEntrypoint"=>null,
+        "currentEntrypoint"=>null,
         "mapEntrypoint"=>null,
-        "previEntrypoint"=>null,
+        "forecastEntrypoint"=>null,
 
         "cacheDuration"=>-1,
     ]) {
@@ -50,9 +50,9 @@ class Config {
         "measurement"=>true,
         "timestamps"=>0,
 
-        "actuEntrypoint"=>null,
+        "currentEntrypoint"=>null,
         "mapEntrypoint"=>null,
-        "previEntrypoint"=>null,
+        "forecastEntrypoint"=>null,
 
         "cacheDuration"=>-1,
     )) {
@@ -69,9 +69,9 @@ class Config {
         $this->setTimestamps($config["timestamps"] ?? $this->getTimestamps() ?? 1);
         $this->setUnit($config["measurement"] ?? $this->getUnit() ?? "standard");
 
-        $this->setActuEntrypoint($config["actuEntrypoint"] ?? $this->getActuEntrypoint() ?? $this->defaultActuEntrypoint);
+        $this->setCurrentEntrypoint($config["currentEntrypoint"] ?? $this->getCurrentEntrypoint() ?? $this->defaultCurrentEntrypoint);
         $this->setMapEntrypoint($config["mapEntrypoint"] ?? $this->getMapEntrypoint() ?? $this->defaultMapEntrypoint);
-        $this->setPreviEntrypoint($config["previEntrypoint"] ?? $this->getPreviEntrypoint() ?? $this->defaultPreviEntrypoint);
+        $this->setForecastEntrypoint($config["previEntrypoint"] ?? $this->getForecastEntrypoint() ?? $this->defaultForecastEntrypoint);
 
         $this->setCacheDuration($config["cacheDuration"] ?? $this->getCacheDuration() ?? $this->defaultCacheDuration);
 
@@ -86,9 +86,9 @@ class Config {
             "measurement" => $this->getTimestamps(),
             "timestamps" => $this->getUnit(),
 
-            "actuEntrypoint" => $this->getActuEntrypoint(),
+            "currentEntrypoint" => $this->getCurrentEntrypoint(),
             "mapEntrypoint" => $this->getMapEntrypoint(),
-            "previEntrypoint" => $this->getPreviEntrypoint(),
+            "forecastEntrypoint" => $this->getForecastEntrypoint(),
 
             "cacheDuration" => $this->getCacheDuration(),
         );
@@ -97,7 +97,7 @@ class Config {
     public function rollbackConfig()
     {
         if(isset($this->lastConfig)) $this->currConfig=$this->lastConfig;
-        else throw new FreatherException("No previous config to rollback to.");
+        else throw new FreatherException("No forecastous config to rollback to.");
     }
 
     /* ---------------------------------------- Getters and setters ---------------------------------------- */
@@ -157,24 +157,24 @@ class Config {
         $this->timestamps = $timstamps;
     }
 
-    public function getActuEntrypoint(): string|null
+    public function getCurrentEntrypoint(): string|null
     {
-        return $this->actuEntrypoint ?? null;
+        return $this->currentEntrypoint ?? null;
     }
 
-    public function setActuEntrypoint(string $actuEntrypoint): void
+    public function setCurrentEntrypoint(string $currentEntrypoint): void
     {
-        $this->actuEntrypoint = $actuEntrypoint;
+        $this->currentEntrypoint = $currentEntrypoint;
     }
 
-    public function getPreviEntrypoint(): string|null
+    public function getForecastEntrypoint(): string|null
     {
-        return $this->previEntrypoint ?? null;
+        return $this->forecastEntrypoint ?? null;
     }
 
-    public function setPreviEntrypoint(string $previEntrypoint): void
+    public function setForecastEntrypoint(string $forecastEntrypoint): void
     {
-        $this->previEntrypoint = $previEntrypoint;
+        $this->forecastEntrypoint = $forecastEntrypoint;
     }
 
     public function getMapEntrypoint(): string|null

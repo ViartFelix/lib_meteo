@@ -9,24 +9,33 @@ use Viartfelix\Freather\Config\{
 
 use Viartfelix\Freather\Exceptions\FreatherException;
 
-use Viartfelix\Freather\meteo\{
-  Actu,
-  Previsions,
-  Carte,
-  Adresses,
+use Viartfelix\Freather\weather\{
+  Current,
+  Forecast,
+  Map,
+  Addresses,
 };
 
-//TODO: debug function (like toString): which is a ton of var_dumps echoed.
-//TODO: fetchGet(Service): fetch and get at the same time.
+use Viartfelix\Freather\enums\MapLayer;
 
+//TODO: fetchGet(Service): fetch and get at the same time.
+//TODO: stockage des fetchs jusqu'à ce que je get est appellé
+//TODO: addresses -> addresses, Actu -> current, Preivisons -> forecast, Carte -> map
+
+//enum PHP
+//class Map layer
+
+//symphony var dumper
+
+//open/closed 
 
 class Freather {
 	private Config $config;
     private Cache $cache;
-	private Actu $actu;
-	private Carte $carte;
-	private Previsions $previsions;
-
+	private Current $current;
+	private Map $map;
+	private Forecast $forecast;
+    
 	function __construct(
         string $apiKey,
 
@@ -35,9 +44,9 @@ class Freather {
 			"measurement"=>"standard",
 			"timestamps"=>1,
 
-            "actuEntrypoint"=>null,
+            "currentEntrypoint"=>null,
             "mapEntrypoint"=>null,
-            "previEntrypoint"=>null,
+            "forecastEntrypoint"=>null,
 		),
         
         int $cacheDuration = -1,
@@ -48,9 +57,9 @@ class Freather {
 			"measurement"=>$init["measurement"] ?? null,
 			"timestamps"=>$init["timestamps"] ?? null,
 
-            "actuEntrypoint" => $init["actuEntrypoint"] ?? null,
+            "currentEntrypoint" => $init["currentEntrypoint"] ?? null,
             "mapEntrypoint" => $init["mapEntrypoint"] ?? null,
-            "previEntrypoint" => $init["previEntrypoint"] ?? null,
+            "forecastEntrypoint" => $init["forecastEntrypoint"] ?? null,
 
             "cacheDuration" => $cacheDuration ?? -1,
 		]);
@@ -60,59 +69,10 @@ class Freather {
         if(isset($cacheDuration)) $this->cache = new Cache($this->config->cacheDuration);
 
 
-		$this->actu = new Actu($this->config, $this->cache);
-		$this->carte = new Carte($this->config);
-		$this->previsions = new Previsions($this->config, $this->cache);
+		$this->current = new Current($this->config, $this->cache);
+		$this->map = new Map($this->config);
+		$this->forecast = new Forecast($this->config, $this->cache);
     }
-
-    /* ---------------------------------------- Class-specific constants ---------------------------------------- */
-
-    /* ------------------------- Carte ------------------------- */
-
-    /**  @var string Convective precipitation (mm) */
-    public const PAC0 = "PAC0";
-
-    /**  @var string Precipitation intensity (mm/s) */
-    public const PR0 = "PR0";
-
-    /**  @var string Accumulated precipitation (mm) */
-    public const PA0 = "PA0";
-
-    /**  @var string Accumulated precipitation - rain (mm) */
-    public const PAR0 = "PAR0";
-
-    /**  @var string Accumulated precipitation - snow (mm) */
-    public const PAS0 = "PAS0";
-
-    /**  @var string Depth of snow (m) */
-    public const SD0 = "SD0";
-
-    /**  @var string Wind speed at an altitude of 10 meters (m/s) */
-    public const WS10 = "WS10";
-
-    /**  @var string Joint display of speed wind (color) and wind direction (arrows), received by U and V components  (m/s) */
-    public const WND = "WND";
-
-    /**  @var string Atmospheric pressure on mean sea level (hPa) */
-    public const APM = "APM";
-
-    /**  @var string Air temperature at a height of 2 meters (°C) */
-    public const TA2 = "TA2";
-
-    /**  @var string Temperature of a dew point (°C) */
-    public const TD2 = "TD2";
-
-    /**  @var string Soil temperature 0-10 сm (K) */
-    public const TS0 = "TS0";
-
-    /**  @var string Soil temperature >10 сm (K) */
-    public const TS10 = "TS10";
-
-    /**  @var string Relative humidity (%) */
-    public const HRD0 = "HRD0";
-
-    /**  @var string Cloudiness (%) */
-    public const CL = "CL";
 
     /* ---------------------------------------- Class-specific methods ---------------------------------------- */
 
@@ -129,18 +89,18 @@ class Freather {
 		return $this;
 	}
 
-  /* ------------------------- Actu ------------------------- */
-	public function fetchActu(string|float|int|Adresses $p1, string|float|int|null $p2 = null, array $options=array()): Freather
+  /* ------------------------- Current ------------------------- */
+	public function fetchCurrent(string|float|int|Addresses $p1, string|float|int|null $p2 = null, array $options=array()): Freather
 	{
         $authorisedTypes = array("string","float","int","double");
 
-        if(!isset($p1)) throw new FreatherException("Error when preparing query: Adresses or latitude parameter (p1) is required.", 1);
+        if(!isset($p1)) throw new FreatherException("Error when preparing query: Addresses or latitude parameter (p1) is required.", 1);
 
         //if p1 is an adress
-        if($p1 instanceof Adresses)
+        if($p1 instanceof Addresses)
         {
-            $this->actu->fetchActu(
-                //We pass adresses to the first parameter
+            $this->current->fetchCurrent(
+                //We pass addresses to the first parameter
                 $p1,
                 //We don't need longitude to be passed
                 null,
@@ -164,7 +124,7 @@ class Freather {
                 $floatLon = round((float)$p2,7);
 
                 //then we can pass to the "controller" of Freather.
-                $this->actu->fetchActu(
+                $this->current->fetchCurrent(
                     $floatLat,
                     $floatLon,
                     $options ?? array()
@@ -180,32 +140,29 @@ class Freather {
 		return $this;
     }
 
-	public function getActu(bool $raw = false): mixed
+	public function getCurrent(bool $raw = false): mixed
 	{
-		return $this->actu->returnRes($raw);
+		return $this->current->returnRes($raw);
 	}
 
-	/* ------------------------- Carte ------------------------- */
+	/* ------------------------- Map ------------------------- */
     /**
      * fetchMap
      * /!\ Please refer to [the zoom levels](https://openweathermap.org/faq#zoom_levels) to get meanings for the zoom, x and y parameters, or you might get unwanted results from this method. /!\
      * @param string|float|int $zoom The zoom value to use. Values must range between 0 and 9 (inclusive), or else a FreatherException will be thrown.
      * @param string|float|int $x The X coordinate to use. Values must range between 0 and 511 (inclusive), or else a FreatherException will be thrown.
      * @param string|float|int $y The Y coordinate to use. Values must range between 0 and 511 (inclusive), or else a FreatherException will be thrown.
-     * @param mixed $op The Layer to use. It is strongly recomanded to use the constants of Freather for this parameter, as they provide easy and safe access to layers. Please refer to [this link](https://openweathermap.org/api/weather-map-2#layers) to get the layer you want.
+     * @param MapLayer $op The Layer to use. Please refer to [this link](https://openweathermap.org/api/weather-map-2#layers), or the MapLayer enum to get the layer you want.
      * @param array $options The optionnal parameters to use. Possible parameters are: date, opacity, palette, fill_bound, arrow_step and use_norm.
      * @return Freather The current instance of Freather
      * 
      * @throws FreatherException
      */
-    
-    //TODO: Instance de FreatherAdresse dans les params.
-
-	public function fetchMap(string|float|int $zoom, string|float|int $x, string|float|int $y, mixed $op, array $options=array()): Freather
+	public function fetchMap(string|float|int $zoom, string|float|int $x, string|float|int $y, MapLayer $op, array $options=array()): Freather
 	{
 
         //First, check of valid values before initializing the fetch request
-        //Soruces for those numbers: https://openweathermap.org/faq#zoom_levels
+        //Sources for those numbers: https://openweathermap.org/faq#zoom_levels
         //If zoom is not between 0 and 9
         if(0 > intval($zoom) || 9 < intval($zoom)) throw new FreatherException("Invalid zoom value. Possible values: an integer between 0 and 9. (Value given: ".$zoom. ")", 1);
         //If X and Y are not between 0 and 511
@@ -218,11 +175,11 @@ class Freather {
         $_y = intval($y);
 
         //Next, we can let the 'back-end' of Freather do the rest, since all values are correct.
-		$this->carte->fetchMap(
+		$this->map->fetchMap(
             $_zoom,
             $_x,
             $_y,
-            $op,
+            $op->name,
             $options
         );
 
@@ -232,22 +189,21 @@ class Freather {
 
 	public function getMap(): mixed
 	{
-		return $this->carte->getLink();
+		return $this->map->getLink();
 	}
 
-	/* ------------------------- Prévisions ------------------------- */
-	/** Fonction qui permet de récupérer les préivisions météo */
-	function fetchPrevisions(string|float|int|Adresses $p1, string|float|int|null $p2 = null, array $options=array()): Freather
+	/* ------------------------- Forecast ------------------------- */
+	function fetchForecast(string|float|int|Addresses $p1, string|float|int|null $p2 = null, array $options=array()): Freather
 	{
 		$authorisedTypes = array("string","float","int","double");
 
-        if(!isset($p1)) throw new FreatherException("Error when preparing query: Adresses or latitude parameter (p1) is required.", 1);
+        if(!isset($p1)) throw new FreatherException("Error when preparing query: Addresses or latitude parameter (p1) is required.", 1);
 
         //if p1 is an adress
-        if($p1 instanceof Adresses)
+        if($p1 instanceof Addresses)
         {
-            $this->previsions->fetchPrevisions(
-                //We pass adresses to the first parameter
+            $this->forecast->fetchForecast(
+                //We pass addresses to the first parameter
                 $p1,
                 //We don't need longitude to be passed
                 null,
@@ -271,7 +227,7 @@ class Freather {
                 $floatLon = round((float)$p2,7);
 
                 //then we can pass to the "controller" of Freather.
-                $this->previsions->fetchPrevisions(
+                $this->forecast->fetchforecast(
                     $floatLat,
                     $floatLon,
                     $options ?? array()
@@ -287,9 +243,9 @@ class Freather {
 		return $this;
 	}
 
-	public function getPrevisions(bool $raw = false): mixed
+	public function getForecast(bool $raw = false): mixed
 	{
-		return $this->previsions->returnRes($raw);
+		return $this->forecast->returnRes($raw);
 	}
 
 	/* ---------------------------------------- Getters and setters ---------------------------------------- */

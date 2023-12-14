@@ -2,194 +2,34 @@
 
 namespace Viartfelix\Freather\common;
 
+use Exception;
 use Symfony\Component\HttpClient\HttpClient;
-
-use Viartfelix\Freather\interfaces\{
-    Adresses,
-    API,
-    CacheInterface,
-};
 
 use Viartfelix\Freather\Config\Config;
 use Viartfelix\Freather\config\Cache;
 
 use Viartfelix\Freather\Exceptions\FreatherException;
 
-use stdClass;
-use Exception;
+use Symfony\Component\HttpClient\Exception\{
+    ServerException,
+    ClientException,
+    RedirectionException
+};
 
-class BaseService {
+use stdClass;
+class BaseService
+{
     private Config $config;
     private Cache $cache;
 
-    private $response;
-    private $returnedRaw;
-    private $returnedRep;
+    public const CURRENT = 1;
+    public const FORECAST = 2;
 
-    private string $mode;
-
-    private array $optionsGlobal;
-
-    const ACTU = 1;
-    const PREVISIONS = 2;
-
-    private string $finalUrl;
-    private bool $isCached = false;
-    private string $hashedUrl;
-
-    /* ------------------------------------ Functions native to baseService ------------------------------------ */
-
+    
     function __construct(Config &$config, Cache &$cache)
     {
         $this->config = $config;
         $this->cache = $cache;
-    }
-
-    public function fetchAndParse(int $service, array $options): stdClass
-    {
-        $toReturn = new stdClass();
-        
-        $this->mode = $this->parseMode($options["mode"] ?? "json");
-
-        $this->prepareFetch($options);
-
-        //If the element is not present in the cache.
-        if(!$this->checkCache($service)) {
-            //Fetch the data
-            $this->fetch($service);
-            //Set the raw response to the cache
-            $this->cache->setItem($this->hashedUrl, $this->returnedRaw);
-
-            $this->isCached = false;
-        } else {
-            //Get the stored item
-            $this->returnedRaw = $this->cache->getItem($this->hashedUrl);
-
-            $this->isCached = true;
-        }
-
-        $this->parseResponse();
-        
-        return $toReturn;
-    }
-
-    /**
-     * prepareFetch
-     * @param array $options The options called in either Previ or Actu
-     * @return void
-     */
-    public function prepareFetch(array $options): void
-    {
-        /**
-         * Common options, defined in config
-         */
-        $this->setOption("appid", $this->config->getApiKey());
-        $this->setOption("lang", $this->config->getLang());
-        $this->setOption("units", $this->config->getUnit());
-        $this->setOption("cnt", $this->config->getTimestamps());
-
-        /**
-         * Other common options (lat, long, mode)
-         */
-        $this->setOption("mode", $this->mode);
-        $this->setOption("lat", $options["latitude"]);
-        $this->setOption("lon", $options["longitude"]);
-    }
-
-    public function prepareAdresses(Adresses $adresses): void
-    {
-
-    }
-
-    /**
-     * checkCache
-     * 'Compiles' the URL for checking the chache later-on
-     */
-    public function checkCache(int $service): bool
-    {
-        $finalUrl="";
-
-        switch ($service) {
-            //ACTU service
-            case 1:
-                $finalUrl = $this->config->getActuEntrypoint();
-                break;
-
-            //PREVI service
-            case 2:
-                $finalUrl = $this->config->getPreviEntrypoint();
-                break;
-        }
-
-        $finalUrl .= "?";
-
-        $indexOption = 0;
-        foreach ($this->getGlobalOptions() as $key => $value) {
-            //If next item is the second from the array
-            $finalUrl .= (++$indexOption == 1 ? "" : "&");
-            $finalUrl .= $key . "=" . $value;
-        }
-
-        $this->hashedUrl = $this->encodeUrl($finalUrl);
-
-        $this->finalUrl = $finalUrl;
-
-        return $this->cache->checkItem($this->hashedUrl);
-    }
-
-    private function parseResponse(): void
-    {
-        $finalData = new stdClass();
-
-        //try {
-          switch (strtolower($this->mode)) {
-            case 'json':
-              $data = json_decode($this->returnedRaw, true, 512) or throw new FreatherException("Could not parse JSON reponse.", 1);
-    
-              if($data instanceof stdClass) {
-                $finalData = $data;
-              } else {
-                $finalData = (object)$data;
-              }
-    
-              break;
-            case 'xml':
-              $decoded_xml = simplexml_load_string($this->returnedRaw, "SimpleXMLElement", LIBXML_NOCDATA) or throw new FreatherException("Could not parse XML response. (error when loading the XML)", 1);
-              $json_decoded = json_encode($decoded_xml) or throw new FreatherException("Could not parse XML response. (error when encoding the XML response)", 1);
-              $data = json_decode($json_decoded, true) or throw new FreatherException("Could not parse XML response. (error when decoding the XML response)", 1);
-    
-              if($data instanceof stdClass) {
-                $finalData = $data;
-              } else {
-                $finalData = (object)$data;
-              }
-      
-              break;
-            
-            default:
-              throw new FreatherException("Error when trying to parse response: the mode '$this->mode' is not supported. Please use 'xml' or 'json' modes.", 1);
-          }
-
-          $finalData->FreatherInfos = new stdClass();
-          $finalData->FreatherInfos->isCached = $this->isCached;
-          $finalData->FreatherInfos->queryUrl = $this->finalUrl;
-          $finalData->FreatherInfos->responseMode = $this->mode;
-          $finalData->FreatherInfos->options = $this->getGlobalOptions();
-          $finalData->FreatherInfos->UrlHash = $this->hashedUrl;
-
-        //} catch(FreatherException $e) {
-        //    $finalData->code = 2;
-        //    $finalData->msg = $e->getMessage();
-        //    $finalData->err = $e;
-
-        //} catch (Exception $e) {
-        //    $finalData->code = 1;
-        //    $finalData->msg = $e->getMessage();
-        //    $finalData->err = $e;
-    
-        //} finally {
-            $this->returnedRep = $finalData;
-        //}
     }
 
     public function parseMode(string $mode=null): string
@@ -206,103 +46,135 @@ class BaseService {
         return ($searchMethod !== false ? $allowedMethods[array_search($modeRaw,$allowedMethods)] : $allowedMethods[0] ?? "json");
     }
 
-    /* ------------------------------------ Interfaces ------------------------------------ */
 
-    /* ------------ API Interface ------------ */
-
-    public function fetch(int $service): void
+    /**
+     * Will loop throught the freshly compiled options and create the API Url, to later check in the cache.
+     */
+    public function compileUrl(int $service, array $options): string
     {
-        $client = HttpClient::create();
-
-        $apiEntrypoint="";
+        $toReturn = "";
 
         switch ($service) {
-            //ACTU service
+            //CURRENT service
             case 1:
-                $apiEntrypoint = $this->config->getActuEntrypoint();
+                $toReturn = $this->config->getCurrentEntrypoint();
                 break;
 
-            //PREVI service
+            //FORECAST service
             case 2:
-                $apiEntrypoint = $this->config->getPreviEntrypoint();
+                $toReturn = $this->config->getForecastEntrypoint();
                 break;
-            
-            //No idea what to put here, so here is a dog ˁ˚ᴥ˚ˀ
-            default:
-                throw new FreatherException("Error when setting up the fetch Service unknown", 1);
         }
 
+        $toReturn .= "?";
 
-        $this->response = $client->request(
-            //Method
-            "GET",
-            //API entrypoint, specified in the switch above
-            $apiEntrypoint,
-            [
-                //verify peer to avoid error
-                "verify_peer" => false,
-                //$_GET options, speified in prepareFetch
-                "query" => $this->getGlobalOptions(),
-            ],
-        );
-        
+        $indexOption = 0;
+        foreach ($options as $key => $value) {
+            $toReturn .= (++$indexOption > 1 ? "&" : "") . $key . "=" .$value;
+        }
 
-        $this->returnedRaw = $this->response->getContent();
+        return $toReturn;
     }
 
-    public function getRes(bool $raw = false): mixed
+    public function fetch(int $service, array $options): string
     {
-        return ($raw ? $this->returnedRaw : $this->returnedRep);
+        $client = HttpClient::create();
+        $entrypoint = "";
+
+        switch ($service) {
+            //CURRENT service
+            case 1:
+                $entrypoint = $this->config->getCurrentEntrypoint();
+                break;
+
+            //FORECAST service
+            case 2:
+                $entrypoint = $this->config->getForecastEntrypoint();
+                break;
+        }
+
+        try {
+            $response = $client->request(
+                //Method
+                "GET",
+                //API entrypoint, specified in the switch above
+                $entrypoint,
+                [
+                    //verify peer to avoid error
+                    "verify_peer" => false,
+                    //$_GET options, speified in prepareFetch
+                    "query" => $options,
+                ],
+            );
+
+    
+            //Response body
+            $bodyRep = $response->getContent();
+
+            return $bodyRep;
+        }
+        //500 errors
+        catch(ServerException $e) {
+            throw new FreatherException("Error when fetching the data to OpenWeatherMap (HTTP error 5XX). HttpClient's error: " . $e->getMessage());
+        }
+        //400 errors
+        catch (ClientException $e) {
+            throw new FreatherException("Error when fetching the data to OpenWeatherMap (HTTP error 4XX). HttpClient's error: " . $e->getMessage());
+        }
+        //300 errors
+        catch(RedirectionException $e) {
+            throw new FreatherException("Error when fetching the data to OpenWeatherMap (HTTP error 3XX). HttpClient's error: " . $e->getMessage());
+        }
+        catch(Exception $e) {
+            throw new FreatherException("Unknown error when fetching the data to OpenWeatherMap. HttpClient's error: " . $e->getMessage());
+        }
     }
 
-    /* ------------ Adresses Interface ------------ */
-
-    /**
-     * Vas stocker les infos des adresses.
-     */
-    public function storeAdrInfos()
+    public function parseResponse(string $response, string $mode): stdClass
     {
+        $finalData = $nonRawResponse = new stdClass();
 
+        switch (strtolower($mode)) {
+            case 'json':
+            $nonRawResponse = json_decode($response, true, 512) or throw new FreatherException("Could not parse JSON reponse.", 1);
+                break;
+
+            case 'xml':
+                $decoded_xml = simplexml_load_string($response, "SimpleXMLElement", LIBXML_NOCDATA) or throw new FreatherException("Could not parse XML response. (error when loading the XML)", 1);
+                $json_decoded = json_encode($decoded_xml) or throw new FreatherException("Could not parse XML response. (error when encoding the XML response)", 1);
+                $nonRawResponse = json_decode($json_decoded, true) or throw new FreatherException("Could not parse XML response. (error when decoding the XML response)", 1);
+                break;
+            
+            default:
+              throw new FreatherException("Error when trying to parse response: the mode '$mode' is not supported. Please use 'xml' or 'json' modes.", 1);
+          }
+
+        //If the decoded response is a stdClass (what we want to return), the we return the final data
+        if($nonRawResponse instanceof stdClass) {
+            $finalData = $nonRawResponse;
+        } else {
+            $finalData = json_decode(json_encode($nonRawResponse));
+        }
+
+        return $finalData;
     }
 
-    /**
-     * Vas convertir les donnes d'adresse stockées en query pour le fetch
-     */
-    public function convertToQuery()
+    public function checkItem(string $key): bool
     {
-
+        return $this->cache->getInstance()->has($key);
     }
 
-    /* ------------ Cache Interface ------------ */
-
-    /**
-     * encoreUrl
-     * Allowed 'encoding' of URL because PHPfastcache doesn't support those special charaters used in the URL: /, \ and :
-     * @param string $url
-     * @return string
-     */
-    public function encodeUrl(string $url): string
+    public function setItem(string $key, mixed $value): void
     {
-        return md5($url);
+        $this->cache->getInstance()->set($key, $value, ($this->cache->getCacheDuration() ?? -1));
     }
 
-
-    /* ------------------------------------ Getters and setters ------------------------------------ */
-
-    public function getGlobalOptions(): array
+    public function getItem(string $key): mixed
     {
-        return $this->optionsGlobal;
+        return $this->cache->getInstance()->get($key);
     }
 
-    public function getOption(string $key): mixed
-    {
-        return $this->optionsGlobal[$key];
-    }
 
-    public function setOption(string $key, mixed $value): void
-    {
-        $this->optionsGlobal[$key] = $value;
-    }
 }
 
 ?>

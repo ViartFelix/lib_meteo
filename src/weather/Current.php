@@ -1,10 +1,10 @@
 <?php
 
-namespace Viartfelix\Freather\meteo;
+namespace Viartfelix\Freather\weather;
 
 use Viartfelix\Freather\common\LatlongService as CoordsService;
-use Viartfelix\Freather\common\AdressesService as AdressesService;
-use Viartfelix\Freather\common\Baser as Baser;
+use Viartfelix\Freather\common\AddressesService as AddressesService;
+use Viartfelix\Freather\common\BaseService as BaseService;
 
 use Viartfelix\Freather\config\Cache;
 use Viartfelix\Freather\Config\Config;
@@ -13,43 +13,41 @@ use Viartfelix\Freather\Exceptions\FreatherException;
 
 use stdClass;
 
-class Previsions extends Baser
+class Current extends BaseService
 {
-
     //using Helper's trait methods
-    use AdressesService, CoordsService;
+    use AddressesService, CoordsService;
 
     private Config $config;
     private Cache $cache;
 
-    private float|Adresses $p1;
+    private float|Addresses $p1;
     private float|null $p2;
 
-    private array $options;
+	private array $options;
 
     private string $rawResponse;
     private stdClass $response;
 
-    function __construct(Config &$config, Cache &$cache)
+	function __construct(Config &$config, Cache &$cache)
 	{
         parent::__construct($config, $cache);
         $this->config = &$config;
         $this->cache = &$cache;
 	}
 
-
-    public function fetchPrevisions(float|Adresses $p1, float|null $p2 = null, array $options = array()): void
+	public function fetchCurrent(float|Addresses $p1, float|null $p2 = null, array $options = array()): void
 	{
         $finalGet = "";
 
-        //If the adresses system is used
-        if($p1 instanceof Adresses)
+        //If the addresses system is used
+        if($p1 instanceof Addresses)
         {
-            //We parse the adresses
-            $parsedAdresse = $this->parseAdresses($p1);
+            //We parse the addresses
+            $parsedAdresse = $this->parseAddresses($p1);
 
             //Compiling all the params
-            $finalGet = $this->compileAdresses($parsedAdresse, $this->config);
+            $finalGet = $this->compileAddresses($parsedAdresse, $this->config);
         }
         //If p1 is type of floating, then the lat-lon system is used.
         else
@@ -70,7 +68,7 @@ class Previsions extends Baser
         $finalGet["mode"] = $this->parseMode($options["mode"] ?? null);
 
         //compile URL for the cache
-        $finalUrl = $this->compileUrl(Baser::PREVISIONS, $finalGet);
+        $finalUrl = $this->compileUrl(BaseService::CURRENT, $finalGet);
 
         //setting up the object for the response
         $response = new stdClass();
@@ -85,7 +83,7 @@ class Previsions extends Baser
         if(!$this->checkItem($cacheKey))
         {
             //Then we fetch it to openweathermap
-            $this->rawResponse = $this->fetch(Baser::PREVISIONS, $finalGet);
+            $this->rawResponse = $this->fetch(BaseService::CURRENT, $finalGet);
             //We tell that the reponse is not cached
             $isCached = false;
             //And we put the item in the cache
@@ -114,7 +112,7 @@ class Previsions extends Baser
         $response->FreatherInfos->options = $finalGet;
 
         //and we attribute the final response, alongside Freather's data to the response
-        $this->response = $response;   
+        $this->response = $response;
 	}
 
     public function returnRes(bool $isRaw = false)
@@ -132,12 +130,12 @@ class Previsions extends Baser
         return $this->rawResponse;
     }
 
-    public function getP1(): float|Adresses
+    public function getP1(): float|Addresses
     {
         return $this->p1;
     }
 
-    public function setP1(float|Adresses $p1): void
+    public function setP1(float|Addresses $p1): void
     {
         $this->p1 = $p1;
     }

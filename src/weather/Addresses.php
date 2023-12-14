@@ -1,8 +1,8 @@
 <?php
 
-namespace Viartfelix\Freather\meteo;
+namespace Viartfelix\Freather\weather;
 
-class Adresses
+class Addresses
 {
 
     private ?string $city;
@@ -23,13 +23,13 @@ class Adresses
         $this->zipCode = $zipCode ?? null;
     }
 
-    public function city(string $city): Adresses
+    public function city(string $city): Addresses
     {
         $this->city = $city;
         return $this;
     }
 
-    public function countryCode(string $code): Adresses
+    public function countryCode(string $code): Addresses
     {
         $this->countryCode = $code;
         return $this;
@@ -38,19 +38,19 @@ class Adresses
     /**
      * Beware, stateCode is only avaliable to the US
      */
-    public function stateCode(string $code): Adresses
+    public function stateCode(string $code): Addresses
     {
         $this->stateCode = $code;
         return $this;
     }
 
-    public function cityID(string $cityID): Adresses
+    public function cityID(string $cityID): Addresses
     {
         $this->cityID = $cityID;
         return $this;
     }
 
-    public function zipCode(string $zipCode): Adresses
+    public function zipCode(string $zipCode): Addresses
     {
         $this->zipCode = $zipCode;
         return $this;
