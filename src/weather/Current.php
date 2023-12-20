@@ -29,6 +29,11 @@ class Current extends BaseService
     private string $rawResponse;
     private stdClass $response;
 
+    private array $allResponses;
+    private array $allResponsesRaw;
+
+    private array $storedResponses;
+
 	function __construct(Config &$config, Cache &$cache)
 	{
         parent::__construct($config, $cache);
@@ -36,7 +41,7 @@ class Current extends BaseService
         $this->cache = &$cache;
 	}
 
-	public function fetchCurrent(float|Addresses $p1, float|null $p2 = null, array $options = array()): void
+	public function fetchCurrent(float|Addresses $p1, float|null $p2 = null, array $options = array(), bool $storeResponse = false, bool $raw = false): void
 	{
         $finalGet = "";
 
@@ -66,6 +71,9 @@ class Current extends BaseService
         
         //parsing the response mode (for security sakes)
         $finalGet["mode"] = $this->parseMode($options["mode"] ?? null);
+
+        //Adding custom param (which is not gonna be used by openweathermap)
+        $finalGet["isRaw"] = $raw;
 
         //compile URL for the cache
         $finalUrl = $this->compileUrl(BaseService::CURRENT, $finalGet);
@@ -111,16 +119,39 @@ class Current extends BaseService
         //all the options in the query
         $response->FreatherInfos->options = $finalGet;
 
-        //and we attribute the final response, alongside Freather's data to the response
+        //we attribute the final response, alongside Freather's data to the response
         $this->response = $response;
+
+        //and we store (or not the) the response
+        if($storeResponse)
+        {
+            //we store the non-raw response, for when getCurrent will be called
+            $this->insertResponse($this->response);
+
+            //we store the raw response, same reason
+            $this->insertRawResponse($this->rawResponse);
+        }
+
+        //If the response is not raw
+        if(!$raw)
+        {
+            $this->storedResponses[] = $this->response;
+        } else {
+            $this->storedResponses[] = $this->rawResponse;
+        }
 	}
 
-    public function returnRes(bool $isRaw = false)
+    public function returnRes(bool $isRaw = false): string|stdClass
     {
         return ($isRaw ? $this->getRaw() : $this->getResponse());
     }
 
-    public function getResponse()
+    public function getAll(): array
+    {
+        return $this->storedResponses;
+    }
+
+    public function getResponse(): stdClass
     {
         return $this->response;
     }
@@ -164,6 +195,22 @@ class Current extends BaseService
 	{
 		return $this->options;
 	}
+
+    //any type
+    public function insertResponse($response): void
+    {
+        $this->allResponses[] = $response;
+    }
+
+    public function getAllRawResponses(): array
+    {
+        return $this->allResponsesRaw;
+    }
+
+    public function insertRawResponse($rawResponse): void
+    {
+        $this->allResponsesRaw[] = $rawResponse;
+    }
 }
 
 ?>

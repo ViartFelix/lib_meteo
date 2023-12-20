@@ -7,6 +7,7 @@ use Viartfelix\Freather\Config\{
     Cache,
 };
 
+use stdClass;
 use Viartfelix\Freather\Exceptions\FreatherException;
 
 use Viartfelix\Freather\weather\{
@@ -17,17 +18,6 @@ use Viartfelix\Freather\weather\{
 };
 
 use Viartfelix\Freather\enums\MapLayer;
-
-//TODO: fetchGet(Service): fetch and get at the same time.
-//TODO: stockage des fetchs jusqu'à ce que je get est appellé
-//TODO: addresses -> addresses, Actu -> current, Preivisons -> forecast, Carte -> map
-
-//enum PHP
-//class Map layer
-
-//symphony var dumper
-
-//open/closed 
 
 class Freather {
 	private Config $config;
@@ -90,13 +80,13 @@ class Freather {
 	}
 
   /* ------------------------- Current ------------------------- */
-	public function fetchCurrent(string|float|int|Addresses $p1, string|float|int|null $p2 = null, array $options=array()): Freather
+	public function fetchCurrent(string|float|int|Addresses $p1, string|float|int|null $p2 = null, $raw = false, array $options=array()): Freather
 	{
         $authorisedTypes = array("string","float","int","double");
 
         if(!isset($p1)) throw new FreatherException("Error when preparing query: Addresses or latitude parameter (p1) is required.", 1);
 
-        //if p1 is an adress
+        //if p1 is an address
         if($p1 instanceof Addresses)
         {
             $this->current->fetchCurrent(
@@ -106,6 +96,8 @@ class Freather {
                 null,
                 //And we pass the options to the "controller" of Freather.
                 $options ?? array(),
+                true,
+                $raw,
             );
         }
         //If the first parametter is not an adress, then that means the latitude / longitude system is used. 
@@ -127,7 +119,9 @@ class Freather {
                 $this->current->fetchCurrent(
                     $floatLat,
                     $floatLon,
-                    $options ?? array()
+                    $options ?? array(),
+                    false,
+                    $raw
                 );
 
             } else {
@@ -140,10 +134,16 @@ class Freather {
 		return $this;
     }
 
-	public function getCurrent(bool $raw = false): mixed
-	{
-		return $this->current->returnRes($raw);
+	public function getAllCurrent(): array
+    {
+		return $this->current->getAll();
 	}
+
+    public function fetchGetCurrent(string|float|int|Addresses $p1, string|float|int|null $p2 = null, array $options=array(), bool $raw = false): string|stdClass
+    {
+        $this->current->fetchCurrent($p1, $p2, $options, false);
+        return $this->current->returnRes($raw);
+    }
 
 	/* ------------------------- Map ------------------------- */
     /**
@@ -193,7 +193,7 @@ class Freather {
 	}
 
 	/* ------------------------- Forecast ------------------------- */
-	function fetchForecast(string|float|int|Addresses $p1, string|float|int|null $p2 = null, array $options=array()): Freather
+	function fetchForecast(string|float|int|Addresses $p1, string|float|int|null $p2 = null, bool $raw = false, array $options=array()): Freather
 	{
 		$authorisedTypes = array("string","float","int","double");
 
@@ -209,6 +209,8 @@ class Freather {
                 null,
                 //And we pass the options to the "controller" of Freather.
                 $options ?? array(),
+                true,
+                $raw,
             );
         }
         //If the first parametter is not an adress, then that means the latitude / longitude system is used. 
@@ -243,10 +245,16 @@ class Freather {
 		return $this;
 	}
 
-	public function getForecast(bool $raw = false): mixed
+	public function getAllForecast(): mixed
 	{
-		return $this->forecast->returnRes($raw);
+		return $this->forecast->getAll();
 	}
+
+    public function fetchGetForecast(string|float|int|Addresses $p1, string|float|int|null $p2 = null, bool $raw = false, array $options=array())
+    {
+        $this->forecast->fetchForecast($p1, $p2, $options, false, $raw);
+        return $this->forecast->returnRes($raw);
+    }
 
 	/* ---------------------------------------- Getters and setters ---------------------------------------- */
 
