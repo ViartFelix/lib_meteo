@@ -20,10 +20,9 @@ trait LatlongService
     }
 
     /**
-     * compileOptions
      * compileOptions will try to chery-pick options and give them back, to prevent unnecessary options.
      */
-    public function compileOptions(array $options, Config $config): array
+    public function compileOptions(array $options, Config &$config): array
     {
         $finalArray = array();
 

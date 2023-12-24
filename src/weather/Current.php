@@ -57,7 +57,7 @@ class Current extends BaseService
         //If p1 is type of floating, then the lat-lon system is used.
         else
         {
-            //If latitude or longitude is inside the authorised range
+            //If latitude or longitude is inside the authorized range
             if($this->isInRange($p1, $p2))
             {
                 //Compiling of the params, for the fetch
@@ -72,7 +72,7 @@ class Current extends BaseService
         //parsing the response mode (for security sakes)
         $finalGet["mode"] = $this->parseMode($options["mode"] ?? null);
 
-        //Adding custom param (which is not gonna be used by openweathermap)
+        //Adding custom param (which is not going to be used by openweathermap)
         $finalGet["isRaw"] = $raw;
 
         //compile URL for the cache
@@ -84,7 +84,7 @@ class Current extends BaseService
         //Note: I convert the url into md5 because PHPfastcache doesn't support the following characters {}()/\@:
         $cacheKey = md5($finalUrl);
 
-        //is gonna be used to tell if the pbject has been cached.
+        //is going to be used to tell if the object has been cached.
         $isCached = true;
 
         //If the item is not in the cache
@@ -92,7 +92,7 @@ class Current extends BaseService
         {
             //Then we fetch it to openweathermap
             $this->rawResponse = $this->fetch(BaseService::CURRENT, $finalGet);
-            //We tell that the reponse is not cached
+            //We tell that the response is not cached
             $isCached = false;
             //And we put the item in the cache
             $this->setItem($cacheKey,$this->rawResponse);

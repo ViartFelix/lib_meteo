@@ -68,5 +68,3 @@ trait AddressesService
         return $finalArray;
     }
 }
-
-?>

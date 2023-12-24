@@ -64,17 +64,17 @@ class Freather {
         int $cacheDuration = -1,
 	) {
 		$this->config=new Config ([
-			"apiKey"=>$apiKey,
-			"lang"=>$init["lang"] ?? null,
-			"measurement"=>$init["measurement"] ?? null,
-			"timestamps"=>$init["timestamps"] ?? null,
+            "apiKey"=>$apiKey,
+            "lang"=>$init["lang"] ?? null,
+            "measurement"=>$init["measurement"] ?? null,
+            "timestamps"=>$init["timestamps"] ?? null,
 
             "currentEntrypoint" => $init["currentEntrypoint"] ?? null,
             "mapEntrypoint" => $init["mapEntrypoint"] ?? null,
             "forecastEntrypoint" => $init["forecastEntrypoint"] ?? null,
 
             "cacheDuration" => $cacheDuration ?? -1,
-		]);
+        ]);
 
 
         //If the user didn't specify a duration for the cache (as it is required for Phpfastcache), then it will not be enabled.
@@ -120,7 +120,9 @@ class Freather {
      */
 	public function rollbackConfig(): Freather
 	{
-		$this->config->rollbackConfig();
+		//We roll back the config
+        $this->config->rollbackConfig();
+
 		return $this;
 	}
 
@@ -200,7 +202,7 @@ class Freather {
                     $raw
                 );
             } else {
-                //If p1 or p2 is not of any authorised type.
+                //If p1 or p2 is not of any authorized type.
                 if(!in_array(gettype($p1),$authorisedTypes)) {
                     throw new FreatherException("Error when preparing query: latitude parameter (p1) is not of any acceptable types: string, int or float. (Type of p1: " . gettype($p1) . ")", 1);
                 }
@@ -540,7 +542,7 @@ class Freather {
      * @return Freather
      * @throws FreatherException
      */
-	public function setConfig(array $config): Freather
+	public function setConfig(array &$config): Freather
 	{
 		$this->defineConfig($config);
 

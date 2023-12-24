@@ -28,8 +28,8 @@ class BaseService
     
     function __construct(Config &$config, Cache &$cache)
     {
-        $this->config = $config;
-        $this->cache = $cache;
+        $this->config = &$config;
+        $this->cache = &$cache;
     }
 
     public function parseMode(string $mode=null): string
@@ -176,5 +176,3 @@ class BaseService
 
 
 }
-
-?>

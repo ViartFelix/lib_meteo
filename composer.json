@@ -17,6 +17,7 @@
         "phpfastcache/phpfastcache": "^9.1"
     },
     "require-dev": {
-        "spatie/ignition": "^1.11"
+        "spatie/ignition": "^1.11",
+        "symfony/var-dumper": "^7.0"
     }
 }

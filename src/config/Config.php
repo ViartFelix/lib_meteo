@@ -14,8 +14,8 @@ class Config {
     private string $defaultForecastEntrypoint = "https://api.openweathermap.org/data/2.5/forecast";
     private string $forecastEntrypoint = "https://api.openweathermap.org/data/2.5/forecast";
 
-    private string $defaultMapEntrypoint = "http://maps.openweathermap.org/maps/2.0/weather";
-    private string $mapEntrypoint = "http://maps.openweathermap.org/maps/2.0/weather";
+    private string $defaultMapEntrypoint = "https://maps.openweathermap.org/maps/2.0/weather";
+    private string $mapEntrypoint = "https://maps.openweathermap.org/maps/2.0/weather";
 
     private string $lang;
     private string $unit;
@@ -64,18 +64,9 @@ class Config {
 
         if(!isset($config["apiKey"]) && !isset($this->lastConfig["apiKey"])) throw new FreatherException("Error when preparing query: API key is required. Please see https://openweathermap.org/api to get one.", 1);
 
-        $this->setApiKey($config["apiKey"] ?? $this->getApiKey() ?? "");
-        $this->setLang($config["lang"] ?? $this->getLang() ?? "en");
-        $this->setTimestamps($config["timestamps"] ?? $this->getTimestamps() ?? 1);
-        $this->setUnit($config["measurement"] ?? $this->getUnit() ?? "standard");
+        $this->setParams($config);
 
-        $this->setCurrentEntrypoint($config["currentEntrypoint"] ?? $this->getCurrentEntrypoint() ?? $this->defaultCurrentEntrypoint);
-        $this->setMapEntrypoint($config["mapEntrypoint"] ?? $this->getMapEntrypoint() ?? $this->defaultMapEntrypoint);
-        $this->setForecastEntrypoint($config["previEntrypoint"] ?? $this->getForecastEntrypoint() ?? $this->defaultForecastEntrypoint);
-
-        $this->setCacheDuration($config["cacheDuration"] ?? $this->getCacheDuration() ?? $this->defaultCacheDuration);
-
-        if(!isset($this->cache))
+        if(isset($this->cache))
         {
             $this->cache = new Cache($this->cacheDuration);
         }
@@ -92,20 +83,50 @@ class Config {
 
             "cacheDuration" => $this->getCacheDuration(),
         );
+
+
     }
 
     public function rollbackConfig()
     {
-        var_dump($this->getLastConfig());
-        echo "<br/><br/>";
-        var_dump($this->getConfig());
-
         if(isset($this->lastConfig)) {
-            $this->currConfig=$this->lastConfig;
+            $this->currConfig = $this->lastConfig;
+            $this->setParams($this->getConfig());
         }
         else {
-            throw new FreatherException("No forecastous config to rollback to.");
+            throw new FreatherException("No previous config to rollback to.");
         }
+    }
+
+    /**
+     * Will set the params of the config. Used to set and update params on all Services.
+     * @param array $options
+     * @return void
+     */
+    private function setParams(array $options = array(
+        "apiKey"=>null,
+        "lang"=>"en",
+        "measurement"=>true,
+        "timestamps"=>0,
+
+        "currentEntrypoint"=>null,
+        "mapEntrypoint"=>null,
+        "forecastEntrypoint"=>null,
+
+        "cacheDuration"=>-1,
+    ))
+    {
+        $this->setApiKey($options["apiKey"] ?? $this->getApiKey() ?? "");
+        $this->setLang($options["lang"] ?? $this->getLang() ?? "en");
+        $this->setTimestamps($options["timestamps"] ?? $this->getTimestamps() ?? 1);
+        $this->setUnit($options["measurement"] ?? $this->getUnit() ?? "standard");
+
+        $this->setCurrentEntrypoint($options["currentEntrypoint"] ?? $this->getCurrentEntrypoint() ?? $this->defaultCurrentEntrypoint);
+        $this->setMapEntrypoint($options["mapEntrypoint"] ?? $this->getMapEntrypoint() ?? $this->defaultMapEntrypoint);
+        $this->setForecastEntrypoint($options["previEntrypoint"] ?? $this->getForecastEntrypoint() ?? $this->defaultForecastEntrypoint);
+
+        $this->setCacheDuration($options["cacheDuration"] ?? $this->getCacheDuration() ?? $this->defaultCacheDuration);
+
     }
 
     /* ---------------------------------------- Getters and setters ---------------------------------------- */

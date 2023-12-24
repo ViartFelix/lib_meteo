@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "70738ab67a004c13841b26ee4d8004e7",
+    "content-hash": "bb01eefb2651c2fcfd108bde35efd187",
     "packages": [
         {
             "name": "phpfastcache/phpfastcache",
@@ -2896,5 +2896,5 @@
     "prefer-lowest": false,
     "platform": [],
     "platform-dev": [],
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.3.0"
 }
