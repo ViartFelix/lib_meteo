@@ -7,7 +7,10 @@ use Viartfelix\Freather\config\Cache;
 use Viartfelix\Freather\Config\Config;
 
 class Map extends BaseService {
+
     private Config $config;
+    private Cache $cache;
+
     private int $x;
     private int $y;
     private int $zoom;
@@ -17,9 +20,14 @@ class Map extends BaseService {
     private string $link;
     private string $compiledOptions="";
 
-    function __construct(Config &$config)
+    private array $allLinks = array();
+
+    function __construct(Config &$config, Cache &$cache)
     {
+        parent::__construct($config, $cache);
+
         $this->config = &$config;
+        $this->cache = &$cache;
     }
 
     public function fetchMap(int $zoom, int $x, int $y, $op, array $options=[])
@@ -35,8 +43,13 @@ class Map extends BaseService {
 
     private function exec(): void
     {
+        //Constructs the options (GET) elements in the URL
         $this->optionsConstruct();
+        //Constructs the link with X, Y, Z and OP.
         $this->linkConstruct();
+
+        //Insert response in the buffer
+        $this->insertLinkBuffer($this->getLink());
     }
 
     private function optionsConstruct(): void
@@ -50,11 +63,19 @@ class Map extends BaseService {
 
         $this->compiledOptions .= "&opacity=" . ($this->getOptions()["opacity"] ?? "0.8");
 
-        if(isset($this->getOptions()["palete"])) {
-            $this->compiledOptions .= "&palete=";
+        if(isset($this->getOptions()["palette"])) {
+            $this->compiledOptions .= "&palette=";
 
-            foreach ($this->getOptions()["palete"] as $index => $color) {
-                $this->compiledOptions .= (($index==0 || array_key_last($this->getOptions()["palete"])==$index) ? "" : ";") . $color;
+            if(gettype($this->getOptions()["palette"]) === 'string')
+            {
+                $this->compiledOptions .= $this->getOptions()["palette"];
+            }
+
+            else
+            {
+                foreach ($this->getOptions()["palette"] as $index => $color) {
+                    $this->compiledOptions .= (($index==0 || array_key_last($this->getOptions()["palette"])==$index) ? "" : ";") . $color;
+                }
             }
         }
 
@@ -80,6 +101,16 @@ class Map extends BaseService {
     }
 
     /* ---------------------------------------- Getters and setters ---------------------------------------- */
+
+    public function getAll(): array
+    {
+        return $this->allLinks;
+    }
+
+    public function insertLinkBuffer(string $link): void
+    {
+        $this->allLinks[] = $link;
+    }
 
     public function getLink(): string
     {
@@ -152,4 +183,3 @@ class Map extends BaseService {
     }
 }
 
-?>
