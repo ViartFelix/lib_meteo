@@ -26,7 +26,7 @@ class Addresses
      * <ul>
      *      <li>Mode 1: city, countryCode and stateCode. (you can use any of those methods, and a method 'mode1' is available if you want to input all 3 at the same time.)</li>
      *      <li>Mode 2: cityID</li>
-     *      <li>Mode 3: zipCode</li>
+     *      <li>Mode 3: zipCode, countryCode</li>
      * </ul>
      *
      * <hr/>
@@ -52,7 +52,7 @@ class Addresses
      * Defines a city to be used when using the Addresses system.
      * Part of the first mode out of the 3 available. <br/>
      *
-     * Can be used for those other methods in the query:
+     * Can be used with those other methods in the query:
      * <ul>
      *      <li>countryCode</li>
      *      <li>stateCode</li>
@@ -74,7 +74,7 @@ class Addresses
      *
      * Part of the first mode out of the 3 available. <br/>
      *
-     * Can be used for those other methods in the query:
+     * Can be used with those other methods in the query:
      * <ul>
      *       <li>city</li>
      *       <li>stateCode</li>
@@ -101,7 +101,7 @@ class Addresses
      *
      * Part of the first mode out of the 3 available. <br/>
      *
-     * Can be used for those other methods in the query:
+     * Can be used with those other methods in the query:
      * <ul>
      *      <li>countryCode</li>
      *      <li>city</li>
@@ -150,6 +150,13 @@ class Addresses
      *
      * <hr/>
      *
+     * Can be used with those other methods in the query:
+     * <ul>
+     *      <li>countryCode</li>
+     * </ul>
+     *
+     * <hr/>
+     *
      * @param string $zipCode The US zip code to be used.
      * @return $this The current Addresses instance.
      */
@@ -180,6 +187,42 @@ class Addresses
         $this->city = $city ?? null;
         $this->countryCode = $countryCode ?? null;
         $this->stateCode = $stateCode ?? null;
+
+        return $this;
+    }
+
+    /**
+     * The second mode out of the 3 available. Exactly the same as the method 'cityID'.
+     *
+     * <hr/>
+     *
+     * @param string $cityID The city ID.
+     * @return $this The current Addresses instance.
+     */
+    public function mode2(string $cityID): Addresses
+    {
+        $this->cityID = $cityID;
+        return $this;
+    }
+
+    /**
+     * The second mode ou of the 3 available. Excactly the same as doing the following methods:
+     *
+     * <ul>
+     *      <li>zipCode</li>
+     *      <li>countryCode</li>
+     * </ul>
+     *
+     * <hr/>
+     *
+     * @param string|null $zipCode The US zip code to be used.
+     * @param string|null $countryCode The country code.
+     * @return $this The current Addresses instance.
+     */
+    public function mode3(string $zipCode = null, string $countryCode = null): Addresses
+    {
+        $this->zipCode = $zipCode ?? null;
+        $this->countryCode = $countryCode ?? null;
 
         return $this;
     }

@@ -50,7 +50,7 @@ trait AddressesService
         return $finalData;
     }
 
-    public function compileAddresses(array $adresseParse, Config $config)
+    public function compileAddresses(array $adresseParse, Config $config): array
     {
         $finalArray = array();
 

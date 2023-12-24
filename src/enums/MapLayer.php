@@ -2,6 +2,9 @@
 
 namespace Viartfelix\Freather\enums;
 
+/**
+ * An enum of all map layers used for the 'Map' service.
+ */
 enum MapLayer
 {
     /**  @var string Convective precipitation (mm) */
