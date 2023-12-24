@@ -83,8 +83,8 @@ class Config {
         $this->currConfig = array(
             "apiKey" => $this->getApiKey(),
             "lang" => $this->getLang(),
-            "measurement" => $this->getTimestamps(),
-            "timestamps" => $this->getUnit(),
+            "measurement" => $this->getUnit(),
+            "timestamps" => $this->getTimestamps(),
 
             "currentEntrypoint" => $this->getCurrentEntrypoint(),
             "mapEntrypoint" => $this->getMapEntrypoint(),
@@ -96,8 +96,16 @@ class Config {
 
     public function rollbackConfig()
     {
-        if(isset($this->lastConfig)) $this->currConfig=$this->lastConfig;
-        else throw new FreatherException("No forecastous config to rollback to.");
+        var_dump($this->getLastConfig());
+        echo "<br/><br/>";
+        var_dump($this->getConfig());
+
+        if(isset($this->lastConfig)) {
+            $this->currConfig=$this->lastConfig;
+        }
+        else {
+            throw new FreatherException("No forecastous config to rollback to.");
+        }
     }
 
     /* ---------------------------------------- Getters and setters ---------------------------------------- */
