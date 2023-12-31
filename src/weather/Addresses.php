@@ -197,7 +197,7 @@ class Addresses
      * <hr/>
      *
      * @param string $cityID The city ID.
-     * @return $this The current Addresses instance.
+     * @return Addresses The current Addresses instance.
      */
     public function mode2(string $cityID): Addresses
     {
@@ -206,7 +206,7 @@ class Addresses
     }
 
     /**
-     * The second mode ou of the 3 available. Excactly the same as doing the following methods:
+     * The second mode ou of the 3 available. Exactly the same as doing the following methods:
      *
      * <ul>
      *      <li>zipCode</li>
@@ -217,7 +217,7 @@ class Addresses
      *
      * @param string|null $zipCode The US zip code to be used.
      * @param string|null $countryCode The country code.
-     * @return $this The current Addresses instance.
+     * @return Addresses The current Addresses instance.
      */
     public function mode3(string $zipCode = null, string $countryCode = null): Addresses
     {
@@ -245,5 +245,3 @@ class Addresses
         );
     }
 }
-
-?>

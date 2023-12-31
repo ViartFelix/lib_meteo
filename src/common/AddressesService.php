@@ -17,6 +17,7 @@ trait AddressesService
      * Will parse the addresses info, and guess the mode: country/city mode, citi ID mode and zip code mode
      * @param Addresses $options The options / addresses
      * @return array
+     * @throws FreatherException
      */
     public function parseAddresses(Addresses $options): array
     {
@@ -25,9 +26,10 @@ trait AddressesService
 
         //If, in the addresses system, the first mode (city name, country code and/or state code)
         if(
-            isset($arrayOptions["city"]) ||
+            (isset($arrayOptions["city"]) ||
             isset($arrayOptions["countryCode"]) ||
-            isset($arrayOptions["stateCode"])
+            isset($arrayOptions["stateCode"])) &&
+            !isset($arrayOptions["zipCode"])
         ) {
             $finalData["q"] = $arrayOptions["city"];
             $finalData["q"] .= (isset($arrayOptions["countryCode"]) ? (",".$arrayOptions["countryCode"]): "");
@@ -40,7 +42,7 @@ trait AddressesService
         //or it's the third mode (zipCode)
         else if(isset($arrayOptions["zipCode"])) {
             $finalData["zip"] = $arrayOptions["zipCode"];
-            $finalData["zip"] .= (isset($arrayOptions["countryCode"]) ? (",".$arrayOptions["countryCode"]): "");
+            $finalData["zip"] .= (isset($arrayOptions["countryCode"]) ? (",".$arrayOptions["countryCode"]) : "");
         }
         //or else nothing corresponds
         else {

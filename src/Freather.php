@@ -156,7 +156,7 @@ class Freather {
      */
 	public function fetchCurrent(string|float|int|Addresses $p1, string|float|int|null $p2 = null, bool $raw = false, array $options=array()): Freather
 	{
-        $authorisedTypes = array("string","float","int","double");
+        $authorisedTypes = array("string","float","int","integer","double");
 
         if(!isset($p1)) {
             throw new FreatherException("Error when preparing query: Addresses or latitude parameter (p1) is required.", 1);
@@ -327,7 +327,7 @@ class Freather {
      *
      * @return array
      */
-	public function getMap(): array
+	public function getAllMap(): array
     {
 		return $this->map->getAll();
 	}
@@ -406,7 +406,7 @@ class Freather {
      */
 	function fetchForecast(string|float|int|Addresses $p1, string|float|int|null $p2 = null, bool $raw = false, array $options=array()): Freather
 	{
-		$authorisedTypes = array("string","float","int","double");
+		$authorisedTypes = array("string","float","int","integer","double");
 
         if(!isset($p1)) throw new FreatherException("Error when preparing query: Addresses or latitude parameter (p1) is required.", 1);
 
