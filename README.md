@@ -29,7 +29,6 @@ All the services function as 'fetcher' and 'getter':
 
 When fetching data, Freather will store the response it and can be accessible when using the getter.
 
-You can specify in the getter if Freather have to reset the stored responses array (default is yes: true).
 ### Syntax for all services:
 #### Current:
 Fetches the current forecast at a specified location.
