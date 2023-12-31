@@ -74,8 +74,9 @@ class Forecast extends BaseService
         //parsing the response mode (for security sakes)
         $finalGet["mode"] = $this->parseMode($options["mode"] ?? null);
 
-        //Adding custom param (which is not gonna be used by openweathermap)
-        $finalGet["isRaw"] = $raw;
+
+        //Adding custom param (which is not going to be used by openweathermap)
+        $finalGet["isRaw"] = $raw ? 'true' : 'false';
 
         //compile URL for the cache
         $finalUrl = $this->compileUrl(BaseService::FORECAST, $finalGet);
@@ -86,7 +87,7 @@ class Forecast extends BaseService
         //Note: I convert the url into md5 because PHPfastcache doesn't support the following characters {}()/\@:
         $cacheKey = md5($finalUrl);
 
-        //is gonna be used to tell if the pbject has been cached.
+        //is going to be used to tell if the project has been cached.
         $isCached = true;
 
         //If the item is not in the cache
@@ -94,7 +95,7 @@ class Forecast extends BaseService
         {
             //Then we fetch it to openweathermap
             $this->rawResponse = $this->fetch(BaseService::FORECAST, $finalGet);
-            //We tell that the reponse is not cached
+            //We tell that the response is not cached
             $isCached = false;
             //And we put the item in the cache
             $this->setItem($cacheKey,$this->rawResponse);

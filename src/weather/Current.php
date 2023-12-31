@@ -68,12 +68,14 @@ class Current extends BaseService
                 ],$this->config);
             }
         }
+
+
         
         //parsing the response mode (for security sakes)
         $finalGet["mode"] = $this->parseMode($options["mode"] ?? null);
 
         //Adding custom param (which is not going to be used by openweathermap)
-        $finalGet["isRaw"] = $raw;
+        $finalGet["isRaw"] = $raw ? 'true' : 'false';
 
         //compile URL for the cache
         $finalUrl = $this->compileUrl(BaseService::CURRENT, $finalGet);
