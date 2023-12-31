@@ -21,7 +21,7 @@ To be able to communicate and use Freather, an API key is required when creating
 
 **Beware**: when a key to Openweathermap has been created, it will not be usable for several minutes / hours / days.
 
-And that's it; you can now use Freather in all your projects, even for commercial use, I don't mind :).
+And that's it; you can now use Freather in all your projects, even for commercial use; I don't mind :).
 ## 3 distinct services:
 All the services function as 'fetcher' and 'getter':
 
@@ -39,7 +39,7 @@ fetchGetCurrent();
 ```
 
 #### Forecast:
-Fetches the future forecasts on a period of 5 days, at a defined latitude and longitude
+Fetches the future forecasts for a period of 5 days, at a defined latitude and longitude
 ```php
 fetchForecast()->getAllForecast();
 //OR if you directly want the result
@@ -62,7 +62,7 @@ They are 2 modes available for you:
 1) Latitude (p1) and Longitude (p2). These two parameters are mandatory, or else a FreatherException will be thrown.
 2) Addresses (p1). Only p1 is mandatory, so putting ``null`` to p2 is completely fine, Freather will just ignore it.
 
-The response mode is optional, and will automatically default to "json".
+The response mode is optional, and will automatically default to "json."
 #### Modes
 ##### Latitude and Longitude
 ###### Structure
@@ -171,7 +171,7 @@ They are two modes available for you:
 
 The response mode is optional, and will automatically default to "json."
 
-**This service will make heavy use of the 'timestamps' (or cnt for OWM), defined and definable in the configuration. See configurations documentation for more informations.**
+**This service will make heavy use of the 'timestamps' (or cnt for OWM), defined and definable in the configuration. See configuration documentation for more information.**
 
 See below for the documentation and syntax of this service.
 #### Modes
@@ -370,9 +370,10 @@ getAllMap()
 
 
 ## Addresses
-If latitude and longitude is not your cup of tea (or it simply is not adapted to your needs), you can use Freather's Addresses system.
+If latitude and longitude are not your cup of tea (or it simply is not adapted to your needs),
+you can use Freather's Addresses system.
 ### Description
-This service is a replacement for the latitude and longitude, that means the two modes are incompatible.
+This service is a replacement for the latitude and longitude; that means the two modes are incompatible.
 
 If the Addresses system is used on the first param, then the priority will go to the Addresses.
 
@@ -385,17 +386,21 @@ On the following services, the Addresses system is possible to be used in the fi
 This system uses the Geocoder API directly from Openweathermap, and thus, is free.
 
 <p style="text-align: center; font-weight: bold">BEWARE</p>
-<p style="text-align: center">The addresses system uses a hierarchy system, which might affect the awaited results from OWM. See bellow for more informations on the hierarchy:</p>
+<p style="text-align: center">The addresses system uses a hierarchy system, which might affect the awaited results from OWM. See bellow for more information on the hierarchy:</p>
 
 Here is the order of priority in the Addresses system:
 1) zipCode
 2) city and/or countryCode and/or stateCode
 3) cityID
 
-For example, if cityID was defined alongside the countryCode, then Freather will prioritise the city, countryCode and stateCode, as they are higher on the hierarchy than cityID. And thus, the first mode will be used.
+For example, if cityID was defined alongside the countryCode,
+then Freather will prioritize the city, countryCode and stateCode,
+as they are higher in the hierarchy than cityID.
+And thus, the first mode will be used.
 
 Another example:
-If the zipCode, countryCode and cityID is defined, Freather will prioritize the third mode, because zipCode is higher on the hierarchy than cityID and countryCode.
+If the zipCode, countryCode and cityID are defined, Freather will prioritize the third mode,
+because zipCode is higher in the hierarchy than cityID and countryCode.
 
 ### Documentation
 #### Structure
@@ -438,7 +443,9 @@ They are 3 modes available for you:
 
 
 #### Functions
-If the constructor nor modes fit your needs (or simply don't want to use those), they are functions for each properties of Addresses. Here are those functions:
+If the constructor nor modes fit your needs (or simply don't want to use those),
+they are functions for each property of Addresses.
+Here are those functions:
 
 | Function name | Name         | Description                                                                                                         | Params            | Usable with             | Returns            |
 |---------------|--------------|---------------------------------------------------------------------------------------------------------------------|-------------------|-------------------------|--------------------|
@@ -490,19 +497,21 @@ $Freather->defineConfig([
 | apiKey             | Your OpenWeatherMap API key                                                                                                                                               | A valid OpenWeatherMap API key                                                     | string         | none                                               | [ ] no \*  |
 | lang               | The lang which will be used when OpenWeatherMap will give the city / location informations.                                                                               | A valid [ISO 631-1](https://fr.wikipedia.org/wiki/Liste_des_codes_ISO_639-1) value | string         | 'en'                                               | [ ] no     |
 | measurement        | The measurement to be used for temperatures                                                                                                                               | 'standard' (Kelvin), 'imperial' (Fahrenheit) or 'metric' (Celsius)                 | string         | 'standard'                                         | [ ] no     |
-| timestamps         | The number of timestamps that will be present in the Previ (forecasts on several days) service.                                                                           | An integer between 1 and 2^32-1                                                    | int, string    | 1                                                  | [ ] no     |
-| currentEntrypoint  | The link to the entrypoint for the service of Actu (current forecast)                                                                                                     | Any link that points to OpenWeatherMap's API                                       | string         | "https://api.openweathermap.org/data/2.5/weather"  | [ ] no     |
-| mapEntrypoint      | The link to the entrypoint for the service of Map (get Link to interractive map)                                                                                          | Any link that points to OpenWeatherMap's API                                       | string         | "http://maps.openweathermap.org/maps/2.0/weather"  | [ ] no     |
-| forecastEntrypoint | The link to the entrypoint for the service of Previ (all future forecats on a period of 5 days)                                                                           | Any link that points to OpenWeatherMap's API                                       | string         | "https://api.openweathermap.org/data/2.5/forecast" | [ ] no     |
+| timestamps         | The number of timestamps that will be present in the Current (forecasts on several days) service.                                                                         | An integer between 1 and 2^32-1                                                    | int, string    | 1                                                  | [ ] no     |
+| currentEntrypoint  | The link to the entrypoint for the service of Current (current forecast)                                                                                                  | Any link that points to OpenWeatherMap's API                                       | string         | "https://api.openweathermap.org/data/2.5/weather"  | [ ] no     |
+| mapEntrypoint      | The link to the entrypoint for the service of Map (get Link to interactive map)                                                                                           | Any link that points to OpenWeatherMap's API                                       | string         | "http://maps.openweathermap.org/maps/2.0/weather"  | [ ] no     |
+| forecastEntrypoint | The link to the entrypoint for the service of Forecast (all future forecasts on a period of 5 days)                                                                       | Any link that points to OpenWeatherMap's API                                       | string         | "https://api.openweathermap.org/data/2.5/forecast" | [ ] no     |
 | cacheDuration      | The duration (in seconds) for the data to be cached. If the value is 0 or -1, then no data will be cached and you will get the API response instead of a cached response. | An integer between 0 and 2^32-1                                                    | int            | -1                                                 | [ ] no     |
 
-* No, when using defineConfig, but yes then instantiating Freather.
+* No, when using defineConfig, but yes, then instantiating Freather.
 If no key was defined the instanciation of Freather, a FreatherException will be thrown.
 
-*Note: if you specify a parameter in the instanciation of Freather, then this param will not reset to the default, it is only overwritten if you explicitly tells it in defineConfig*
+*Note: if you specify a parameter in the instanciation of Freather, then this param will not reset to the default, it is only overwritten if you explicitly tell it in defineConfig*
 
 ### The rollback system
-A rollback system is available. When the method ``rollbackConfig()`` is called, then the configuration will rollback to the previous state, to allow you to not re-define and store the previous configuration
+A rollback system is available.
+When the method ``rollbackConfig()`` is called, then the configuration will roll back to the previous state,
+to allow you to not re-define and store the previous configuration
 
 **BEWARE**: The rollback can only roll back of one configuration. This means Freather only stores the PREVIOUS configuration, and not all defined configuration in the instance. Example:
 
@@ -540,7 +549,7 @@ $Freather->defineConfig([
 $Freather->rollbackConfig();
 
 //Expected: rolling back to the config of the instantiation of Freather
-//Got: ERROR: FreatherException: No previous config to rollback to.
+//Got: ERROR: FreatherException: No previous config to roll back to.
 $Freather->rollbackConfig();
 
 ```
