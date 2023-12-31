@@ -9,19 +9,19 @@
 composer require 'FelixViart/freather'
 ```
 
-*PHP extensions* <br/>
+*PHP extensions*
 You need to enable the following PHP extensions to be able to use Freather:
 
 | Name     | Reason                                                                                                                           |
 |----------|----------------------------------------------------------------------------------------------------------------------------------|
 | PHP Curl | Because Freather uses Symphony's HTTP client (and by extension, the PHP Curl extension), the Curl PHP extension must be enabled. | 
 
-*API Key* <br/>
+*API Key*
 To be able to communicate and use Freather, an API key is required when creating the Freather instance. See [this link](https://home.openweathermap.org/api_keys) on how to get one.
 
-**Beware**: when a key to openweathermap has been created, it will not be usable for several minutes / hours / days.
+**Beware**: when a key to Openweathermap has been created, it will not be usable for several minutes / hours / days.
 
-And that's it, you can now use Freather in all your projects, even for commercial use, I don't mind :).
+And that's it; you can now use Freather in all your projects, even for commercial use, I don't mind :).
 ## 3 distinct services:
 All the services function as 'fetcher' and 'getter':
 
@@ -40,7 +40,7 @@ fetchGetCurrent();
 ```
 
 #### Forecast:
-Fetches the future forecats on a period of 5 days, at a defined latitude and longitude
+Fetches the future forecasts on a period of 5 days, at a defined latitude and longitude
 ```php
 fetchForecast()->getAllForecast();
 //OR if you directly want the result
@@ -48,7 +48,7 @@ fetchGetForecast();
 ```
 
 #### Map:
-Construct a link to get the desired map, alongside layers and other filters.
+Builds a link to get the desired map, alongside layers and other filters.
 ```php
 fetchMap()->getMap();
 //OR if you directly want the result
@@ -64,51 +64,6 @@ They are 2 modes available for you:
 2) Addresses (p1). Only p1 is mandatory, so putting ``null`` to p2 is completely fine, Freather will just ignore it.
 
 The response mode is optional, and will automatically default to "json".
-#### Documentation
-*How to get the current weather at position 0, 0 ?*
-```php
-use Viartfelix\Freather\Freather;
-
-//Defining API key
-$Freather = new Freather(
-	"(your API key)",
-);
-
-//fetching from Openweathermap at lat 0 and lon 0
-$Freather->fetchCurrent(
-    //lat
-    0,
-    //lon
-    0,
-)->getAllCurrent();
-```
-
-With this, the constructed URL will be:
-"https://api.openweathermap.org/data/2.5/weather?lat=0&lon=0&appid=(your_api_key)&units=standard&lang=en&cnt=1&mode=json&isRaw=false"
-
-*How to get the current weather a position 0, 0 with the xml response mode, and with the raw, unfiltered response ?*
-```php
-use Viartfelix\Freather\Freather;
-
-//Defining API key
-$Freather = new Freather(
-	"(your API key)",
-);
-
-$Freather->fetchCurrent(
-    //lat
-    0,
-    //lon
-    0,
-    //raw ?
-    true,
-    [
-	    //response mode
-            "mode" => "xml"
-    ]
-)->getAllCurrent();
-```
-
 #### Modes
 ##### Latitude and Longitude
 ###### Structure
@@ -162,67 +117,64 @@ getAllCurrent()
 | $options\["mode"] | Response mode  | The response mode of OpenWeatherMap.                                                                                                                                                   | string    | 'json' or 'xml' | 'json'        | [ ] no     |
 
 
-### Forecast
-#### Description
-Allows one to get the future forecasts in a specified longitude and latitude, or at a specified location (see the Addresses documentation).
-
-They are 2 modes available for you:
-1) Latitude (p1) and Longitude (p2). These two parameters are mandatory, or else a FreatherException will be thrown.
-2) Addresses (p1). Only p1 is mandatory, so putting ``null`` to p2 is completely fine, Freather will just ignore it.
-
-The response mode is optional, and will automatically default to "json".
-
-**This service will make heavy use of the 'timestamps' (or cnt for OWM), defined and definable in the configuration. See configurations documentation for more informations.**
-
-See below for the documentation and syntax of this service.
-#### Documentation
-*How to get forecasts at position 0, 0 with 15 timestamps ?*
+#### Exemples
+*How to get the current weather at position 0, 0 ?*
 ```php
 use Viartfelix\Freather\Freather;
 
-$Freather=new Freather(
+//Defining API key
+$Freather = new Freather(
 	"(your API key)",
-	[
-	  "timestamps" => 15,//The number of timestamps in the response.
-	]
 );
 
-//fetch the forecast
-$Freather->fetchForecast(
+//fetching from Openweathermap at lat 0 and lon 0
+$Freather->fetchCurrent(
 	//lat
     0,
     //lon
     0,
-)->getAllForecast();
+)->getAllCurrent();
 ```
 
-With this, the constructed URL will be:
-"https://api.openweathermap.org/data/2.5/forecast?lat=0&lon=0&appid=(your_api_key)&units=standard&lang=en&cnt=1&mode=json&isRaw=false"
+With this, the built URL will be:
+"https://api.openweathermap.org/data/2.5/weather?lat=0&lon=0&appid=(your_api_key)&units=standard&lang=en&cnt=1&mode=json&isRaw=false"
 
-*Same thing but with the xml response mode, in raw, with the Japanese language and using the metric system:*
+*How to get the current weather a position 0, 0 with the xml response mode, and with the raw, unfiltered response ?*
 ```php
 use Viartfelix\Freather\Freather;
 
+//Defining API key
 $Freather = new Freather(
 	"(your API key)",
-	[
-		"lang" => "jp",
-		"measurement" => "metric",
-		"timestamps" => 15,
-	]
 );
 
-$Freather->fetchForecast(
+$Freather->fetchCurrent(
+	//lat
     0,
+	//lon
     0,
+    //raw ?
     true,
     [
-	    "mode" => "xml"
+	    //response mode
+		"mode" => "xml"
     ]
-)->getAllForecast();
+)->getAllCurrent();
 ```
-With this, the constructed URL will be:
-"https://api.openweathermap.org/data/2.5/forecast?lat=0&lon=0&appid=(your_api_key)&units=metric&lang=jp&cnt=15&mode=xml&isRaw=true"
+
+### Forecast
+#### Description
+Allows one to get the future forecasts in a specified longitude and latitude, or at a specified location (see the Addresses documentation).
+
+They are two modes available for you:
+1) Latitude (p1) and Longitude (p2). These two parameters are mandatory, or else a FreatherException will be thrown.
+2) Addresses (p1). Only p1 is mandatory, so putting ``null`` to p2 is completely fine, Freather will just ignore it.
+
+The response mode is optional, and will automatically default to "json."
+
+**This service will make heavy use of the 'timestamps' (or cnt for OWM), defined and definable in the configuration. See configurations documentation for more informations.**
+
+See below for the documentation and syntax of this service.
 #### Modes
 ##### Latitude and Longitude
 ###### Structure
@@ -275,15 +227,62 @@ getAllForecast()
 | $options          | Options        | An array of options for the query                                                                                                                                                      | array     | None            | (empty array) | [ ] no     |
 | $options\["mode"] | Response mode  | The response mode of OpenWeatherMap.                                                                                                                                                   | string    | 'json' or 'xml' | 'json'        | [ ] no     |
 
+#### Exemples
+*How to get forecasts at position 0, 0 with 15 timestamps ?*
+```php
+use Viartfelix\Freather\Freather;
+
+$Freather=new Freather(
+	"(your API key)",
+	[
+	  "timestamps" => 15,//The number of timestamps in the response.
+	]
+);
+
+//fetch the forecast
+$Freather->fetchForecast(
+	//lat
+    0,
+    //lon
+    0,
+)->getAllForecast();
+```
+
+With this, the built URL will be:
+"https://api.openweathermap.org/data/2.5/forecast?lat=0&lon=0&appid=(your_api_key)&units=standard&lang=en&cnt=1&mode=json&isRaw=false"
+
+*Same thing but with the xml response mode, in raw, with the Japanese language and using the metric system:*
+```php
+use Viartfelix\Freather\Freather;
+
+$Freather = new Freather(
+	"(your API key)",
+	[
+		"lang" => "jp",
+		"measurement" => "metric",
+		"timestamps" => 15,
+	]
+);
+
+$Freather->fetchForecast(
+    0,
+    0,
+    true,
+    [
+	    "mode" => "xml"
+    ]
+)->getAllForecast();
+```
+With this, the built URL will be:
+"https://api.openweathermap.org/data/2.5/forecast?lat=0&lon=0&appid=(your_api_key)&units=metric&lang=jp&cnt=15&mode=xml&isRaw=true"
 ### Map
+<p style="text-align: center; font-weight: bold">BEWARE</p>
+<p style="text-align: center">Please refer to <a href="https://openweathermap.org/faq#zoom_levels">the zoom levels</a> (https://openweathermap.org/faq#zoom_levels) and <a href="https://openweathermap.org/api/weather-map-2">the official documentation</a> (https://openweathermap.org/api/weather-map-2) to get meanings for the zoom, x, y and all the options, or you might get unwanted results from this method.</p>
 #### Description
 Allows one to get the link to a map with defined filters, and other definable options *(see structure for details)*
 
 See below for the documentation and syntax of this service.
-#### Documentation
-<p style="text-align: center; font-weight: bold">BEWARE</p>
-<p style="text-align: center">Please refer to <a href="https://openweathermap.org/faq#zoom_levels">the zoom levels</a> (https://openweathermap.org/faq#zoom_levels) and <a href="https://openweathermap.org/api/weather-map-2">the official documentation</a> (https://openweathermap.org/api/weather-map-2) to get meanings for the zoom, x, y and all the options, or you might get unwanted results from this method.</p>
-
+#### Exemples
 *How to get the link to a map, X and Y at 255, zoom at 5 and the atmospheric pressure layer (APM) ?*
 ```php
 use Viartfelix\Freather\Freather;  
@@ -389,14 +388,14 @@ This system uses the Geocoder API directly from Openweathermap, and thus, is fre
 <p style="text-align: center; font-weight: bold">BEWARE</p>
 <p style="text-align: center">The addresses system uses a hierarchy system, which might affect the awaited results from OWM. See bellow for more informations on the hierarchy:</p>
 
-Here is the order of priority of the Addresses system:
+Here is the order of priority in the Addresses system:
 1) zipCode
 2) city and/or countryCode and/or stateCode
 3) cityID
 
-For exemple, if cityID was defined alongside the countryCode, then Freather will prioritise the city, countryCode and stateCode, as they are higher on the hierarchy than cityID. And thus, the first mode will be used.
+For example, if cityID was defined alongside the countryCode, then Freather will prioritise the city, countryCode and stateCode, as they are higher on the hierarchy than cityID. And thus, the first mode will be used.
 
-Another exemple:
+Another example:
 If the zipCode, countryCode and cityID is defined, Freather will prioritize the third mode, because zipCode is higher on the hierarchy than cityID and countryCode.
 
 ### Documentation
@@ -476,9 +475,7 @@ $weatherParis = $Freather->fetchGetCurrent(
 ```
 
 This code will result in the following URL being build and queried to Openweathermap:
-https://api.openweathermap.org/data/2.5/weather?q=Paris,fr&appid=(API_KEY)&units=standard&lang=en&cnt=1&mode=json&isRaw=false
-
-
+"https://api.openweathermap.org/data/2.5/weather?q=Paris,fr&appid=(API_KEY)&units=standard&lang=en&cnt=1&mode=json&isRaw=false"
 
 ## Entirely configurable lib
 Freather uses a configuration to run and query OWM. Here is a list of all configurable options:
@@ -500,7 +497,7 @@ $Freather->defineConfig([
 | forecastEntrypoint | The link to the entrypoint for the service of Previ (all future forecats on a period of 5 days)                                                                           | Any link that points to OpenWeatherMap's API                                       | string         | "https://api.openweathermap.org/data/2.5/forecast" | [ ] no     |
 | cacheDuration      | The duration (in seconds) for the data to be cached. If the value is 0 or -1, then no data will be cached and you will get the API response instead of a cached response. | An integer between 0 and 2^32-1                                                    | int            | -1                                                 | [ ] no     |
 
-\* : No when using defineConfig, but yes then instantiating Freather.
+* No, when using defineConfig, but yes then instantiating Freather.
 If no key was defined the instanciation of Freather, a FreatherException will be thrown.
 
 *Note: if you specify a parameter in the instanciation of Freather, then this param will not reset to the default, it is only overwritten if you explicitly tells it in defineConfig*
@@ -508,7 +505,7 @@ If no key was defined the instanciation of Freather, a FreatherException will be
 ### The rollback system
 A rollback system is available. When the method ``rollbackConfig()`` is called, then the configuration will rollback to the previous state, to allow you to not re-define and store the previous configuration
 
-**BEWARE**: The rollback can only rollback of one configuration. This means Freather only stores the PREVIOUS configuration, and not all defined configuration in the instance. Example:
+**BEWARE**: The rollback can only roll back of one configuration. This means Freather only stores the PREVIOUS configuration, and not all defined configuration in the instance. Example:
 
 ```php
 $Freather = new Freather([
@@ -556,7 +553,7 @@ This cache is based on [phpFastCache](https://www.phpfastcache.com/).
 It is very simple.
 When instantiating Freather, there is a third param available: the cache duration in seconds.
 
-If that duration is greater than 0, then when querying to OWM, the result is stored to a cache.
+If that duration is greater than 0, then when querying to OWM, the result is stored to the cache.
 
 Then, if you re-query the exact same URL and the item is still stored, you will get what's in the cache: a cache response and an API call spared.
 
